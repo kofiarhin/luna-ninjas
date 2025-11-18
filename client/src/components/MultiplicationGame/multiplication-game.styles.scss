@@ -12,6 +12,39 @@
   align-items: center;
 }
 
+/* wrong-answer flash */
+
+.game-page-wrong {
+  animation: game-flash-wrong 0.35s ease-out;
+}
+
+@keyframes game-flash-wrong {
+  0% {
+    background: radial-gradient(
+      circle at top,
+      #3b0f16 0,
+      #1a0507 55%,
+      #020308 100%
+    );
+  }
+  50% {
+    background: radial-gradient(
+      circle at top,
+      #7f1d1d 0,
+      #450a0a 55%,
+      #020308 100%
+    );
+  }
+  100% {
+    background: radial-gradient(
+      circle at top,
+      #1b1f11 0,
+      #050507 55%,
+      #020308 100%
+    );
+  }
+}
+
 /* card */
 
 .game-card {
@@ -41,6 +74,10 @@
   font-weight: 800;
   color: #d8ff3f;
   text-shadow: 0 0 14px rgba(202, 255, 72, 0.8);
+}
+
+.game-title span {
+  color: #fefce8;
 }
 
 .game-subtitle {
@@ -77,6 +114,17 @@
   color: #fecaca;
   box-shadow: 0 0 14px rgba(248, 113, 113, 0.7);
   transform: scale(1.02);
+}
+
+.timer-label {
+  display: block;
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+.timer-value {
+  display: block;
+  font-size: 0.9rem;
 }
 
 /* question */
@@ -165,8 +213,8 @@
   transform: translateY(0);
 }
 
-.feedback-wrong {
-  color: #fb7185;
+.feedback-timeout {
+  color: #facc15;
   opacity: 1;
   transform: translateY(0);
 }
@@ -260,7 +308,7 @@
   top: 64px;
 }
 
-/* slice animations – slower so it stays longer */
+/* slice animations – correct answer */
 
 .watermelon-slice .watermelon-left {
   animation: slice-left 0.9s ease-out forwards;
@@ -289,6 +337,36 @@
 
 .watermelon-slice .watermelon-slash-line {
   animation: slash-line 0.5s ease-out forwards;
+}
+
+/* wrong answer watermelon animation */
+
+.watermelon-wrong {
+  opacity: 1;
+  transform: scale(1);
+  animation: watermelon-wrong 0.6s ease-out forwards;
+}
+
+@keyframes watermelon-wrong {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  20% {
+    transform: translate(-8px, 4px) rotate(-4deg) scale(1.02);
+  }
+  40% {
+    transform: translate(8px, -4px) rotate(4deg) scale(1.02);
+  }
+  60% {
+    transform: translate(-6px, 3px) rotate(-3deg) scale(1.01);
+  }
+  80% {
+    transform: translate(6px, -3px) rotate(3deg) scale(1.01);
+  }
+  100% {
+    transform: translate(0, 10px) rotate(0deg) scale(0.9);
+    opacity: 0;
+  }
 }
 
 /* animations */

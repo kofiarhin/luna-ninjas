@@ -75,7 +75,13 @@ const MultiplicationGame = () => {
       }, 700);
     } else {
       setFeedback("wrong");
-      setTimeout(() => setFeedback(""), 600);
+      setWatermelonVisible(true);
+      setWatermelonSlice(false);
+
+      setTimeout(() => {
+        setFeedback("");
+        setWatermelonVisible(false);
+      }, 600);
     }
   };
 
@@ -85,7 +91,9 @@ const MultiplicationGame = () => {
   };
 
   return (
-    <div className="game-page">
+    <div
+      className={`game-page ${feedback === "wrong" ? "game-page-wrong" : ""}`}
+    >
       <div className="game-card">
         <header className="game-header">
           <h1 className="game-title">
@@ -93,7 +101,9 @@ const MultiplicationGame = () => {
           </h1>
           <div className="game-meta">
             <p className="game-subtitle">Question {questionCount + 1}</p>
-            <div className={`game-timer ${timeLeft <= 2 ? "timer-low" : ""}`}>
+            <div
+              className={`game-timer ${timeLeft <= 2 ? "game-timer-low" : ""}`}
+            >
               <span className="timer-label">Time</span>
               <span className="timer-value">{timeLeft}s</span>
             </div>
@@ -129,12 +139,9 @@ const MultiplicationGame = () => {
         <div
           className={`feedback-text ${
             feedback === "correct" ? "feedback-correct" : ""
-          } ${feedback === "wrong" ? "feedback-wrong" : ""} ${
-            feedback === "timeout" ? "feedback-timeout" : ""
-          }`}
+          } ${feedback === "timeout" ? "feedback-timeout" : ""}`}
         >
           {feedback === "correct" && "Nice slash, ninja!"}
-          {feedback === "wrong" && "Try again…"}
           {feedback === "timeout" && "Time's up!"}
         </div>
 
@@ -143,7 +150,7 @@ const MultiplicationGame = () => {
             <div
               className={`watermelon ${
                 watermelonSlice ? "watermelon-slice" : ""
-              }`}
+              } ${feedback === "wrong" ? "watermelon-wrong" : ""}`}
               onAnimationEnd={handleSliceAnimationEnd}
             >
               <div className="watermelon-halo" />
