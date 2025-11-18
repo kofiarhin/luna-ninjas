@@ -1,0 +1,80 @@
+{
+  "product_name": "Times Tables Learning MVP",
+  "inspiration": "Times Tables Rock Stars",
+  "overview": "An adaptive, gamified learning platform that helps children aged 6+ practise multiplication and division facts using short daily sessions. It blends question‑based games, personalised algorithms and rock‑themed avatars to make practising times tables feel like a game rather than homework.",
+  "target_segments": {
+    "schools": {
+      "description": "Primary and secondary schools seeking a whole‑school maths programme to improve multiplication and division recall. Teachers can assign tasks, track progress and access unlimited student accounts.",
+      "pricing": "~£102.20 per year (ex VAT) for unlimited pupils and teachers, plus optional ‘Stats’ bolt‑on (~£36.50/year) for detailed analytics and a ‘Sessions’ bolt‑on (~£36.50/year) for homework tasks. Discounts available for small schools and for bundles with the NumBots programme.",
+      "free_trial": "4‑week full‑access trial without payment details."
+    },
+    "families": {
+      "description": "Parents and home educators who want a structured way for their children to practise times tables at home. The family plan includes multiple child and adult accounts with progress tracking.",
+      "pricing": "~£7.20 per year (including VAT) for up to 3 child accounts and 2 adult accounts. Additional child accounts can be purchased on a pro‑rated basis.",
+      "refund_policy": "No free trial; however, families can request a full refund within 30 days if not satisfied."
+    },
+    "tutors": {
+      "description": "Independent tutors or tuition centres looking for an affordable value‑add tool to give tutees homework between sessions and monitor progress.",
+      "pricing": "~£2.40 per pupil per year with a minimum of three tutees. Additional tutees can be added at a pro‑rated cost. Tutors receive a 30‑day refund window."
+    }
+  },
+  "revenue_streams": [
+    "Annual subscription fees from schools, families and tutors.",
+    "Optional bolt‑ons (Sessions and Stats) for schools.",
+    "Cross‑sales of the companion programme ‘NumBots’ for addition and subtraction.",
+    "Merchandise sales via an online shop (e.g., branded apparel and accessories).",
+    "Paid events and competitions such as ‘Rock Festivals’, ‘Battle of the Bands’ and inter‑school contests.",
+    "Potential enterprise agreements with multi‑academy trusts or district‑wide licences."
+  ],
+  "value_proposition": {
+    "adaptive_learning": "An algorithm personalises the sequence of questions and difficulty for every game, ensuring each child practises at an appropriate level.",
+    "gamification": "Players pick rock‑star avatars, earn virtual coins for correct answers, customise outfits, and progress through rock status levels (e.g., New Artist to Rock Hero).",
+    "multiple_game_modes": "Single‑player modes (Jamming, Gig, Garage, Studio, Soundcheck) and multiplayer modes (Festival, Arena, Rock Slam, Tournaments) offer variety and cater to different confidence levels.",
+    "progress_tracking": "Detailed statistics and heat maps allow parents, teachers and tutors to monitor engagement and fluency. Teachers can generate leaderboards, certificates and set homework tasks (via bolt‑ons).",
+    "accessibility_and_safety": "Available via web and mobile apps (Android, iOS, Amazon). Includes accessibility options such as alternative colour schemes, dyslexia‑friendly fonts, screen‑reader compatibility, declutter mode and the ability to hide timers. The platform has no chat function, no ads, anonymous rock names and curfew settings to protect learners’ well‑being.",
+    "inclusive_and_engaging": "Suitable for ages 6 and up. Designed by maths teachers with a mission to improve confidence and recall. Used by tens of thousands of schools and households worldwide."
+  },
+  "key_features": {
+    "user_accounts": "Unique logins for each child with options to create parent, teacher or tutor accounts. Picture pins help young children remember passwords.",
+    "game_modes": {
+      "jamming": "Timer‑free mode where players choose which multiplication or division tables to practise and whether to include both operations. Offers 10, 20 or 30 questions per session and awards 4 or 8 coins per correct answer.",
+      "gig": "Single‑player assessment with 100 questions across all tables (10s through 12s) in a 5‑minute timed session. Used as a monthly baseline or progress check and awards 10 coins per correct answer.",
+      "garage": "Adaptive single‑player practice with 1‑3 minute games. The algorithm personalises six multiplication questions (and matching division questions) per round and awards 10 coins per correct answer.",
+      "studio": "Single‑player mode that calculates a player’s ‘Studio Speed’ (average of the latest ten games) and assigns a rock status. Games last one minute and award 1 coin per correct answer.",
+      "soundcheck": "Single‑player test that mimics the UK Multiplication Tables Check: 25 multiplication questions with a 6‑second time limit per question. Awards 5 coins per correct answer.",
+      "festival": "Multiplayer mode where players from around the world compete in one‑minute games covering all tables up to 12×12, earning 1 coin per correct answer.",
+      "arena": "Class‑based multiplayer mode similar to Garage. The algorithm adapts questions, and players compete live against classmates for one minute.",
+      "rock_slam": "One‑on‑one challenge mode where a player competes against a classmate or teacher’s recorded performance in a one‑minute game. Participants do not need to be online simultaneously.",
+      "tournaments": "Battle‑of‑the‑Bands (intra‑school) and Top‑of‑the‑Rocks (inter‑school) competitions tally correct answers to determine winners and foster community engagement."
+    },
+    "statistics_and_reports": "Heat maps, leaderboards, coins earned, studio speed and other metrics help measure fluency and highlight gaps. The Stats bolt‑on provides deeper insights for teachers.",
+    "homework_tasks": "Teachers can assign specific game‑mode minutes via the Sessions bolt‑on; progress is tracked and games unlock when homework is completed.",
+    "offline_support": "Downloadable paper worksheets complement the online games and are included in school subscriptions.",
+    "events_and_community": "Regular events (e.g., Rock competitions) and worldwide leaderboards encourage participation and create a sense of community.",
+    "data_protection_compliance": "Complies with GDPR and the UK Age Appropriate Design Code, with Cyber Essentials Plus certification."
+  },
+  "marketing_and_growth": {
+    "testimonials_and_case_studies": "The platform highlights positive feedback from teachers, parents and students worldwide and showcases case studies to build credibility.",
+    "social_media_and_content": "Active presence on social platforms (Twitter, Facebook, Instagram, YouTube, TikTok) and a blog for tips and announcements.",
+    "events_and_competitions": "Hosts regional and international competitions and events (e.g., South Australia Rocks) to engage users and attract new schools.",
+    "educator_community": "Offers webinars, training videos and a dedicated support team to help educators integrate the programme effectively.",
+    "free_trial_and_refund_policies": "Free trials for schools and generous refund policies for families and tutors help overcome adoption barriers."
+  },
+  "technology_stack_suggestions_for_mvp": {
+    "frontend": "React (with Vite or Next.js) for the web client; React Native for mobile apps to share logic across platforms. Use a component library for accessible UI and responsive design.",
+    "backend": "Node.js with Express or NestJS, using a NoSQL database like MongoDB to store user profiles, game sessions and statistics. Implement WebSocket support (e.g., using Socket.io) for real‑time multiplayer modes.",
+    "authentication": "JWT‑based authentication with role‑based access control for teachers, parents and students. Use unique picture pins for younger users.",
+    "adaptive_algorithm": "Implement a basic spaced‑repetition or mastery‑learning algorithm that adjusts difficulty based on response accuracy and speed. Store player performance metrics to personalise future question sets.",
+    "analytics_and_dashboard": "Use database aggregation pipelines or a separate analytics service to generate heat maps, leaderboards and progress reports. Provide exportable reports for teachers and parents.",
+    "deployment_and_scalability": "Deploy the MVP on a cloud platform such as Vercel (front‑end) and Render or Heroku (back‑end). Use managed databases like MongoDB Atlas. Ensure the system can handle concurrent multiplayer sessions.",
+    "accessibility_and_security": "Include options for high‑contrast modes, dyslexia‑friendly fonts, adjustable timers and screen reader compatibility. Enforce data privacy through encryption at rest and in transit, and implement rate limiting and audit logging."
+  },
+  "mvp_recommendations": {
+    "core_functionality": "Focus on single‑player game modes (Jamming and Garage) to deliver adaptive practice and build the underlying algorithm. Include basic user management (parents can create child accounts). Implement coin rewards, avatar customisation and simple progress dashboards.",
+    "data_and_metrics": "Track number of questions attempted, accuracy rate, average response time and coins earned. Provide parents/teachers with a summary view.",
+    "gamification": "Implement rock‑themed avatars and coin‑based rewards early to drive engagement. Introduce progression statuses (e.g., New Artist to Rock Hero) based on performance thresholds.",
+    "scalability_plan": "Design architecture to support additional game modes, multiplayer features and statistics bolt‑ons in future iterations. Ensure APIs are modular and extendable.",
+    "marketing_launch": "Offer a free or low‑cost beta to pilot schools or families. Collect feedback through user interviews and in‑app surveys. Use social media and community competitions to generate buzz."
+  },
+  "notes": "Pricing values are approximations based on publicly available information and may vary by region or over time."
+}
