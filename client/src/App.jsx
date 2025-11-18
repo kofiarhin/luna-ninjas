@@ -1,19 +1,17 @@
 import React from "react";
-import "./app.styles.scss";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "./Pages/Home/Home";
+import Game from "./Pages/Game/Game";
 
 const App = () => {
   return (
-    <div className="landing-wrapper">
-      <div className="landing-content">
-        <h1 className="landing-title">Welcome to Luna Ninjas</h1>
-        <p className="landing-subtitle">
-          Master math through epic ninja quests.
-        </p>
-
-        <button className="start-btn">Begin Your Quest</button>
-      </div>
-
-      <div className="ninja-bg"></div>
+    <div>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/game" element={<Game />} />
+        </Routes>
+      </Router>
     </div>
   );
 };

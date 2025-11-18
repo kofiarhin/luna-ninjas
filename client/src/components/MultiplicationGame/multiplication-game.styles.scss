@@ -1,0 +1,335 @@
+.game-page {
+  min-height: 100vh;
+  padding: 16px;
+  background: radial-gradient(
+    circle at top,
+    #1b1f11 0,
+    #050507 55%,
+    #020308 100%
+  );
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* card */
+
+.game-card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(5, 6, 10, 0.96);
+  border-radius: 18px;
+  padding: 20px 18px 28px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.8);
+  color: #f9fafb;
+  position: relative;
+  overflow: hidden;
+}
+
+/* header */
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 16px;
+}
+
+.game-title {
+  font-size: 1.6rem;
+  letter-spacing: 0.06em;
+  font-weight: 800;
+  color: #d8ff3f; /* neon lime like welcome screen */
+  text-shadow: 0 0 14px rgba(202, 255, 72, 0.8);
+}
+
+.game-subtitle {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  color: #e5f4a8;
+}
+
+/* question */
+
+.question-block {
+  margin: 8px 0 18px;
+  text-align: left;
+}
+
+.question-text {
+  display: inline-block;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #05060b, #020308);
+  border: 1px solid rgba(216, 255, 63, 0.35);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #f9fafb;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+/* options */
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.option-button {
+  padding: 12px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(63, 63, 70, 0.9);
+  background: radial-gradient(circle at top left, #111114, #020308);
+  color: #f4f4f5;
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.08s ease, box-shadow 0.1s ease, border-color 0.1s,
+    background 0.1s, color 0.1s;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+}
+
+.option-button:hover {
+  border-color: rgba(216, 255, 63, 0.7);
+  background: radial-gradient(circle at top left, #171718, #030308);
+}
+
+.option-button:active {
+  transform: scale(0.96);
+  box-shadow: none;
+}
+
+.option-button:focus-visible {
+  border-color: #bef264;
+}
+
+.option-correct {
+  background: radial-gradient(circle at top left, #d9f99d, #4d7c0f);
+  border-color: #bef264;
+  color: #071508;
+  box-shadow: 0 0 20px rgba(202, 255, 72, 0.9);
+}
+
+.option-fade {
+  opacity: 0.55;
+}
+
+/* feedback */
+
+.feedback-text {
+  min-height: 20px;
+  font-size: 0.9rem;
+  text-align: left;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.feedback-correct {
+  color: #bef264;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.feedback-wrong {
+  color: #fb7185;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Watermelon animation layer */
+
+.watermelon-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.watermelon {
+  position: relative;
+  width: 260px; /* bigger */
+  height: 140px; /* bigger */
+  opacity: 0;
+  transform: scale(0.25);
+  transition: opacity 0.18s ease-out, transform 0.18s ease-out;
+}
+
+.watermelon-slice {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.watermelon-halo {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(216, 255, 63, 0.7), transparent 65%);
+  filter: blur(3px);
+}
+
+/* halves */
+
+.watermelon-half {
+  position: absolute;
+  width: 125px;
+  height: 125px;
+  top: 8px;
+  border-radius: 125px 0 0 125px;
+  background: radial-gradient(circle at 30% 30%, #fecaca, #b91c1c 70%);
+  border: 6px solid #4d7c0f;
+  box-shadow: inset 0 0 0 5px #166534;
+  overflow: hidden;
+}
+
+.watermelon-left {
+  left: 8px;
+}
+
+.watermelon-right {
+  right: 8px;
+  border-radius: 0 125px 125px 0;
+}
+
+/* seeds */
+
+.watermelon-half::before,
+.watermelon-half::after {
+  content: "";
+  position: absolute;
+  width: 7px;
+  height: 12px;
+  border-radius: 50%;
+  background: #020617;
+  opacity: 0.9;
+}
+
+.watermelon-left::before {
+  left: 56px;
+  top: 32px;
+}
+
+.watermelon-left::after {
+  left: 38px;
+  top: 64px;
+}
+
+.watermelon-right::before {
+  right: 38px;
+  top: 34px;
+}
+
+.watermelon-right::after {
+  right: 56px;
+  top: 64px;
+}
+
+/* slice animations – slower so it stays longer */
+
+.watermelon-slice .watermelon-left {
+  animation: slice-left 0.9s ease-out forwards;
+}
+
+.watermelon-slice .watermelon-right {
+  animation: slice-right 0.9s ease-out forwards;
+}
+
+.watermelon-slash-line {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 0;
+  height: 3px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    #fef9c3,
+    #facc15,
+    transparent
+  );
+  transform: rotate(-20deg);
+  opacity: 0;
+}
+
+.watermelon-slice .watermelon-slash-line {
+  animation: slash-line 0.5s ease-out forwards;
+}
+
+/* animations */
+
+@keyframes slice-left {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-45px, -20px) rotate(-12deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-90px, -55px) rotate(-28deg);
+    opacity: 0;
+  }
+}
+
+@keyframes slice-right {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(45px, 20px) rotate(12deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(90px, 55px) rotate(28deg);
+    opacity: 0;
+  }
+}
+
+@keyframes slash-line {
+  0% {
+    width: 0;
+    opacity: 0;
+  }
+  40% {
+    width: 280px;
+    opacity: 1;
+  }
+  100% {
+    width: 300px;
+    opacity: 0;
+  }
+}
+
+/* mobile-first → scale up on larger screens */
+
+@media (min-width: 480px) {
+  .game-card {
+    padding: 22px 22px 30px;
+  }
+
+  .question-text {
+    font-size: 1.7rem;
+  }
+
+  .option-button {
+    font-size: 1.15rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .game-card {
+    max-width: 480px;
+  }
+
+  .game-title {
+    font-size: 1.8rem;
+  }
+}
