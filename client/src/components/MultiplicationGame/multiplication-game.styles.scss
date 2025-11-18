@@ -10,39 +10,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: background 0.2s ease;
 }
 
 /* wrong-answer flash */
 
 .game-page-wrong {
-  animation: game-flash-wrong 0.35s ease-out;
-}
-
-@keyframes game-flash-wrong {
-  0% {
-    background: radial-gradient(
-      circle at top,
-      #3b0f16 0,
-      #1a0507 55%,
-      #020308 100%
-    );
-  }
-  50% {
-    background: radial-gradient(
-      circle at top,
-      #7f1d1d 0,
-      #450a0a 55%,
-      #020308 100%
-    );
-  }
-  100% {
-    background: radial-gradient(
-      circle at top,
-      #1b1f11 0,
-      #050507 55%,
-      #020308 100%
-    );
-  }
+  animation: bg-flash 0.26s ease-out;
 }
 
 /* card */
@@ -52,7 +26,7 @@
   max-width: 420px;
   background: rgba(5, 6, 10, 0.96);
   border-radius: 18px;
-  padding: 20px 18px 28px;
+  padding: 22px 18px 30px;
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.8);
   color: #f9fafb;
   position: relative;
@@ -64,8 +38,20 @@
 .game-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 16px;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.game-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.game-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .game-title {
@@ -82,20 +68,15 @@
 
 .game-subtitle {
   font-size: 0.8rem;
-  opacity: 0.8;
+  opacity: 0.85;
   color: #e5f4a8;
 }
 
-.game-meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-}
+/* timer */
 
 .game-timer {
-  min-width: 56px;
-  padding: 4px 10px;
+  min-width: 64px;
+  padding: 5px 12px;
   border-radius: 999px;
   border: 1px solid rgba(216, 255, 63, 0.4);
   background: radial-gradient(circle at top, #020308, #05060b);
@@ -104,46 +85,52 @@
   text-align: center;
   color: #e5f4a8;
   box-shadow: 0 0 12px rgba(190, 242, 100, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  justify-content: center;
+  align-items: center;
   transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease,
     transform 0.15s ease;
 }
 
-.game-timer-low {
+.timer-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+}
+
+.timer-value {
+  font-size: 0.9rem;
+}
+
+.timer-low {
   background: radial-gradient(circle at top, #451a1a, #111827);
   border-color: #fb7185;
   color: #fecaca;
   box-shadow: 0 0 14px rgba(248, 113, 113, 0.7);
-  transform: scale(1.02);
-}
-
-.timer-label {
-  display: block;
-  font-size: 0.7rem;
-  opacity: 0.8;
-}
-
-.timer-value {
-  display: block;
-  font-size: 0.9rem;
+  transform: scale(1.05);
 }
 
 /* question */
 
 .question-block {
-  margin: 8px 0 18px;
+  margin: 6px 0 20px;
   text-align: center;
 }
 
 .question-text {
   display: inline-block;
-  padding: 10px 18px;
+  padding: 12px 22px;
   border-radius: 999px;
   background: linear-gradient(135deg, #05060b, #020308);
   border: 1px solid rgba(216, 255, 63, 0.35);
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 800;
   color: #f9fafb;
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+  animation: question-pop 0.45s ease-out;
 }
 
 /* options */
@@ -308,7 +295,7 @@
   top: 64px;
 }
 
-/* slice animations – correct answer */
+/* correct slice animations */
 
 .watermelon-slice .watermelon-left {
   animation: slice-left 0.9s ease-out forwards;
@@ -339,34 +326,12 @@
   animation: slash-line 0.5s ease-out forwards;
 }
 
-/* wrong answer watermelon animation */
+/* wrong-answer wobble */
 
-.watermelon-wrong {
+.watermelon-wobble {
   opacity: 1;
-  transform: scale(1);
-  animation: watermelon-wrong 0.6s ease-out forwards;
-}
-
-@keyframes watermelon-wrong {
-  0% {
-    transform: translate(0, 0) rotate(0deg) scale(1);
-  }
-  20% {
-    transform: translate(-8px, 4px) rotate(-4deg) scale(1.02);
-  }
-  40% {
-    transform: translate(8px, -4px) rotate(4deg) scale(1.02);
-  }
-  60% {
-    transform: translate(-6px, 3px) rotate(-3deg) scale(1.01);
-  }
-  80% {
-    transform: translate(6px, -3px) rotate(3deg) scale(1.01);
-  }
-  100% {
-    transform: translate(0, 10px) rotate(0deg) scale(0.9);
-    opacity: 0;
-  }
+  transform: scale(0.95);
+  animation: watermelon-wobble 0.6s ease-out;
 }
 
 /* animations */
@@ -416,15 +381,61 @@
   }
 }
 
+/* child-friendly question pop */
+
+@keyframes question-pop {
+  0% {
+    transform: translateY(14px) scale(0.9);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(-4px) scale(1.03);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* wrong background flash */
+
+@keyframes bg-flash {
+  0% {
+    background: radial-gradient(
+      circle at top,
+      #2a150f 0,
+      #050507 55%,
+      #020308 100%
+    );
+  }
+  50% {
+    background: radial-gradient(
+      circle at top,
+      #4b1616 0,
+      #12040a 55%,
+      #030308 100%
+    );
+  }
+  100% {
+    background: radial-gradient(
+      circle at top,
+      #1b1f11 0,
+      #050507 55%,
+      #020308 100%
+    );
+  }
+}
+
 /* mobile-first → scale up on larger screens */
 
 @media (min-width: 480px) {
   .game-card {
-    padding: 22px 22px 30px;
+    padding: 24px 22px 32px;
   }
 
   .question-text {
-    font-size: 1.7rem;
+    font-size: 1.8rem;
   }
 
   .option-button {
