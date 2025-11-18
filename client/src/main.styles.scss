@@ -1,0 +1,33 @@
+/* Import Google Font */
+@import url("https://fonts.googleapis.com/css2?family=Racing+Sans+One&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Global body styling */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", sans-serif; /* your main UI font */
+}
+
+// typography
+.heading {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  &.center {
+    text-align: center;
+  }
+  text-transform: capitalize;
+}
+
+.text {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  &.center {
+    text-align: center;
+  }
+}
