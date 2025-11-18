@@ -6,10 +6,12 @@ const MultiplicationGame = () => {
   const [options, setOptions] = useState([4]);
   const [feedback, setFeedback] = useState("");
   const [watermelonVisible, setWatermelonVisible] = useState(false);
-  const [watermelonSlice, setWatermelonSlice] = useState(false);
+  const [watermelonSlice, setWatermelonSlice] = useState(false); // correct animation
+  const [watermelonMiss, setWatermelonMiss] = useState(false); // wrong animation
   const [questionCount, setQuestionCount] = useState(0);
   const [timeLeft, setTimeLeft] = useState(5);
-  const [wrongFlash, setWrongFlash] = useState(false);
+  const [questionKey, setQuestionKey] = useState(0); // for re-starting question animation
+  const [bgFlash, setBgFlash] = useState(false); // background flash on wrong
 
   const generateQuestion = () => {
     const a = Math.floor(Math.random() * 12) + 1;
@@ -34,22 +36,27 @@ const MultiplicationGame = () => {
     setOptions(shuffled);
     setFeedback("");
     setTimeLeft(5);
+    setQuestionKey((prev) => prev + 1); // force slide-in animation restart
   };
 
+  // first question
   useEffect(() => {
     generateQuestion();
   }, []);
 
   // timer countdown + timeout handling
   useEffect(() => {
-    if (timeLeft === 0) {
+    if (timeLeft <= 0) {
+      if (feedback === "correct") return; // already moving on
+
       setFeedback("timeout");
 
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         setQuestionCount((prev) => prev + 1);
         generateQuestion();
       }, 800);
-      return;
+
+      return () => clearTimeout(timeoutId);
     }
 
     const timerId = setTimeout(() => {
@@ -57,16 +64,22 @@ const MultiplicationGame = () => {
     }, 1000);
 
     return () => clearTimeout(timerId);
-  }, [timeLeft]);
+  }, [timeLeft, feedback]);
 
   const handleAnswer = (value) => {
+    // ignore clicks if time is up or we’re already showing a correct slice
+    if (timeLeft <= 0 || feedback === "correct") return;
+
     const isCorrect = value === question.answer;
 
     if (isCorrect) {
       setFeedback("correct");
+
       setWatermelonVisible(true);
+      setWatermelonMiss(false);
       setWatermelonSlice(false);
 
+      // kick off slice animation cleanly
       requestAnimationFrame(() => {
         requestAnimationFrame(() => setWatermelonSlice(true));
       });
@@ -76,51 +89,44 @@ const MultiplicationGame = () => {
         generateQuestion();
       }, 700);
     } else {
-      setFeedback("wrong");
+      // wrong: different animation + background flash, no text
+      setFeedback(""); // no "Try again" message
+
       setWatermelonVisible(true);
       setWatermelonSlice(false);
+      setWatermelonMiss(true);
 
-      // background flash on wrong
-      setWrongFlash(true);
-      setTimeout(() => setWrongFlash(false), 260);
-
-      // hide feedback/animation shortly after
-      setTimeout(() => {
-        setFeedback("");
-        setWatermelonVisible(false);
-      }, 650);
+      setBgFlash(true);
+      setTimeout(() => setBgFlash(false), 220); // quick flash
     }
   };
 
   const handleSliceAnimationEnd = () => {
-    // hide after correct slice animation finishes
-    if (feedback === "correct") {
-      setWatermelonVisible(false);
-      setWatermelonSlice(false);
-    }
+    // hide whichever watermelon animation just finished
+    setWatermelonVisible(false);
+    setWatermelonSlice(false);
+    setWatermelonMiss(false);
   };
 
   return (
-    <div className={`game-page ${wrongFlash ? "game-page-wrong" : ""}`}>
+    <div className={`game-page ${bgFlash ? "game-page-miss" : ""}`}>
       <div className="game-card">
         <header className="game-header">
-          <div className="game-header-left">
-            <h1 className="game-title">
-              Level: <span>1</span>
-            </h1>
-          </div>
+          <h1 className="game-title">
+            Level: <span>1</span>
+          </h1>
 
-          <div className="game-header-right">
+          <div className="game-meta">
             <p className="game-subtitle">Question {questionCount + 1}</p>
             <div className={`game-timer ${timeLeft <= 2 ? "timer-low" : ""}`}>
-              <span className="timer-label">Time</span>
+              <span className="timer-label">TIME</span>
               <span className="timer-value">{timeLeft}s</span>
             </div>
           </div>
         </header>
 
-        <div className="question-block">
-          <span key={questionCount} className="question-text">
+        <div key={questionKey} className="question-block question-animate">
+          <span className="question-text">
             {question.a} × {question.b}
           </span>
         </div>
@@ -134,8 +140,8 @@ const MultiplicationGame = () => {
                   ? "option-correct"
                   : ""
               } ${
-                feedback === "wrong" && opt !== question.answer
-                  ? "option-fade"
+                feedback === "timeout" && opt === question.answer
+                  ? "option-timeout"
                   : ""
               }`}
               onClick={() => handleAnswer(opt)}
@@ -159,7 +165,7 @@ const MultiplicationGame = () => {
             <div
               className={`watermelon ${
                 watermelonSlice ? "watermelon-slice" : ""
-              } ${feedback === "wrong" ? "watermelon-wobble" : ""}`}
+              } ${watermelonMiss ? "watermelon-miss" : ""}`}
               onAnimationEnd={handleSliceAnimationEnd}
             >
               <div className="watermelon-halo" />
