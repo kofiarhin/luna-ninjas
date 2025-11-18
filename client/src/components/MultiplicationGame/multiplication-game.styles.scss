@@ -39,7 +39,7 @@
   font-size: 1.6rem;
   letter-spacing: 0.06em;
   font-weight: 800;
-  color: #d8ff3f; /* neon lime like welcome screen */
+  color: #d8ff3f;
   text-shadow: 0 0 14px rgba(202, 255, 72, 0.8);
 }
 
@@ -49,11 +49,41 @@
   color: #e5f4a8;
 }
 
+.game-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.game-timer {
+  min-width: 56px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(216, 255, 63, 0.4);
+  background: radial-gradient(circle at top, #020308, #05060b);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  color: #e5f4a8;
+  box-shadow: 0 0 12px rgba(190, 242, 100, 0.35);
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.game-timer-low {
+  background: radial-gradient(circle at top, #451a1a, #111827);
+  border-color: #fb7185;
+  color: #fecaca;
+  box-shadow: 0 0 14px rgba(248, 113, 113, 0.7);
+  transform: scale(1.02);
+}
+
 /* question */
 
 .question-block {
   margin: 8px 0 18px;
-  text-align: left;
+  text-align: center;
 }
 
 .question-text {
@@ -154,8 +184,8 @@
 
 .watermelon {
   position: relative;
-  width: 260px; /* bigger */
-  height: 140px; /* bigger */
+  width: 260px;
+  height: 140px;
   opacity: 0;
   transform: scale(0.25);
   transition: opacity 0.18s ease-out, transform 0.18s ease-out;

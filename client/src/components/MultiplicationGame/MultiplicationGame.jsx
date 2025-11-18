@@ -8,6 +8,7 @@ const MultiplicationGame = () => {
   const [watermelonVisible, setWatermelonVisible] = useState(false);
   const [watermelonSlice, setWatermelonSlice] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(5); // ⏱ timer state
 
   const generateQuestion = () => {
     const a = Math.floor(Math.random() * 12) + 1;
@@ -31,11 +32,30 @@ const MultiplicationGame = () => {
     setQuestion({ a, b, answer: correct });
     setOptions(shuffled);
     setFeedback("");
+    setTimeLeft(5); // reset timer for new question
   };
 
   useEffect(() => {
     generateQuestion();
   }, []);
+
+  // timer countdown + timeout handling
+  useEffect(() => {
+    if (timeLeft === 0) {
+      setFeedback("timeout");
+      setTimeout(() => {
+        setQuestionCount((prev) => prev + 1);
+        generateQuestion();
+      }, 800);
+      return;
+    }
+
+    const timerId = setTimeout(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearTimeout(timerId);
+  }, [timeLeft]);
 
   const handleAnswer = (value) => {
     const isCorrect = value === question.answer;
@@ -68,8 +88,16 @@ const MultiplicationGame = () => {
     <div className="game-page">
       <div className="game-card">
         <header className="game-header">
-          <h1 className="game-title">Luna Ninjas</h1>
-          <p className="game-subtitle">Question {questionCount + 1}</p>
+          <h1 className="game-title">
+            Level: <span>1</span>{" "}
+          </h1>
+          <div className="game-meta">
+            <p className="game-subtitle">Question {questionCount + 1}</p>
+            <div className={`game-timer ${timeLeft <= 2 ? "timer-low" : ""}`}>
+              <span className="timer-label">Time</span>
+              <span className="timer-value">{timeLeft}s</span>
+            </div>
+          </div>
         </header>
 
         <div className="question-block">
@@ -101,10 +129,13 @@ const MultiplicationGame = () => {
         <div
           className={`feedback-text ${
             feedback === "correct" ? "feedback-correct" : ""
-          } ${feedback === "wrong" ? "feedback-wrong" : ""}`}
+          } ${feedback === "wrong" ? "feedback-wrong" : ""} ${
+            feedback === "timeout" ? "feedback-timeout" : ""
+          }`}
         >
           {feedback === "correct" && "Nice slash, ninja!"}
           {feedback === "wrong" && "Try again…"}
+          {feedback === "timeout" && "Time's up!"}
         </div>
 
         <div className="watermelon-layer">
