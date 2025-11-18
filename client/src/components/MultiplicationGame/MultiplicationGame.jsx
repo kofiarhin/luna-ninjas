@@ -8,7 +8,8 @@ const MultiplicationGame = () => {
   const [watermelonVisible, setWatermelonVisible] = useState(false);
   const [watermelonSlice, setWatermelonSlice] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(5); // ⏱ timer state
+  const [timeLeft, setTimeLeft] = useState(5);
+  const [wrongFlash, setWrongFlash] = useState(false);
 
   const generateQuestion = () => {
     const a = Math.floor(Math.random() * 12) + 1;
@@ -32,7 +33,7 @@ const MultiplicationGame = () => {
     setQuestion({ a, b, answer: correct });
     setOptions(shuffled);
     setFeedback("");
-    setTimeLeft(5); // reset timer for new question
+    setTimeLeft(5);
   };
 
   useEffect(() => {
@@ -43,6 +44,7 @@ const MultiplicationGame = () => {
   useEffect(() => {
     if (timeLeft === 0) {
       setFeedback("timeout");
+
       setTimeout(() => {
         setQuestionCount((prev) => prev + 1);
         generateQuestion();
@@ -78,32 +80,39 @@ const MultiplicationGame = () => {
       setWatermelonVisible(true);
       setWatermelonSlice(false);
 
+      // background flash on wrong
+      setWrongFlash(true);
+      setTimeout(() => setWrongFlash(false), 260);
+
+      // hide feedback/animation shortly after
       setTimeout(() => {
         setFeedback("");
         setWatermelonVisible(false);
-      }, 600);
+      }, 650);
     }
   };
 
   const handleSliceAnimationEnd = () => {
-    setWatermelonVisible(false);
-    setWatermelonSlice(false);
+    // hide after correct slice animation finishes
+    if (feedback === "correct") {
+      setWatermelonVisible(false);
+      setWatermelonSlice(false);
+    }
   };
 
   return (
-    <div
-      className={`game-page ${feedback === "wrong" ? "game-page-wrong" : ""}`}
-    >
+    <div className={`game-page ${wrongFlash ? "game-page-wrong" : ""}`}>
       <div className="game-card">
         <header className="game-header">
-          <h1 className="game-title">
-            Level: <span>1</span>{" "}
-          </h1>
-          <div className="game-meta">
+          <div className="game-header-left">
+            <h1 className="game-title">
+              Level: <span>1</span>
+            </h1>
+          </div>
+
+          <div className="game-header-right">
             <p className="game-subtitle">Question {questionCount + 1}</p>
-            <div
-              className={`game-timer ${timeLeft <= 2 ? "game-timer-low" : ""}`}
-            >
+            <div className={`game-timer ${timeLeft <= 2 ? "timer-low" : ""}`}>
               <span className="timer-label">Time</span>
               <span className="timer-value">{timeLeft}s</span>
             </div>
@@ -111,7 +120,7 @@ const MultiplicationGame = () => {
         </header>
 
         <div className="question-block">
-          <span className="question-text">
+          <span key={questionCount} className="question-text">
             {question.a} × {question.b}
           </span>
         </div>
@@ -150,7 +159,7 @@ const MultiplicationGame = () => {
             <div
               className={`watermelon ${
                 watermelonSlice ? "watermelon-slice" : ""
-              } ${feedback === "wrong" ? "watermelon-wrong" : ""}`}
+              } ${feedback === "wrong" ? "watermelon-wobble" : ""}`}
               onAnimationEnd={handleSliceAnimationEnd}
             >
               <div className="watermelon-halo" />
