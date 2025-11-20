@@ -21,13 +21,13 @@ const Home = () => {
     // small delay so you actually hear the sound
     setTimeout(() => {
       navigate("/game");
-    }, 300);
+    }, 1700);
   };
 
   return (
     <div className="landing-wrapper">
       {/* file must be: client/public/sounds/correct.mpeg */}
-      <audio ref={audioRef} src="/sounds/correct.mpeg" preload="auto" />
+      <audio ref={audioRef} src="/sounds/correct.mp3" preload="auto" />
 
       <div className="landing-content fade-in">
         <h1 className="landing-title slide-down">Welcome to Luna Ninjas</h1>
