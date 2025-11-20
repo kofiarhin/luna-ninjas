@@ -1,19 +1,44 @@
-import React from "react";
+import React, { useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import "./home.styles.scss";
-import { Link } from "react-router-dom";
 
 const Home = () => {
+  const audioRef = useRef(null);
+  const navigate = useNavigate();
+
+  const handleStart = (e) => {
+    e.preventDefault();
+
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0; // restart from beginning
+      audioRef.current.volume = 1;
+
+      audioRef.current.play().catch((err) => {
+        console.error("Audio play error:", err);
+      });
+    }
+
+    // small delay so you actually hear the sound
+    setTimeout(() => {
+      navigate("/game");
+    }, 300);
+  };
+
   return (
     <div className="landing-wrapper">
-      <div className="landing-content">
-        <h1 className="landing-title">Welcome to Luna Ninjas</h1>
+      {/* file must be: client/public/sounds/correct.mpeg */}
+      <audio ref={audioRef} src="/sounds/correct.mpeg" preload="auto" />
+
+      <div className="landing-content fade-in">
+        <h1 className="landing-title slide-down">Welcome to Luna Ninjas</h1>
         <p className="landing-subtitle">
           Master math through epic ninja quests.
         </p>
 
-        <Link to="/game" className="start-btn">
+        {/* use a button, we control navigation manually */}
+        <button className="start-btn" onClick={handleStart}>
           Begin Your Quest
-        </Link>
+        </button>
       </div>
 
       <div className="ninja-bg"></div>

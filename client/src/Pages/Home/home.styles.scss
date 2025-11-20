@@ -12,10 +12,13 @@
   overflow: hidden;
 }
 
+/* ---------------------- CONTENT ---------------------- */
+
 .landing-content {
   text-align: center;
   z-index: 2;
-  animation: fadeIn 1.2s ease-out;
+  opacity: 0;
+  animation: fadeIn 1.2s ease-out forwards;
 }
 
 .landing-title {
@@ -52,20 +55,23 @@
   transform: translateY(-2px);
 }
 
+/* ---------------------- BACKGROUND ---------------------- */
+
 .ninja-bg {
   position: absolute;
   width: 100%;
   height: 100%;
   top: 0;
   left: 0;
-
   background: url("https://images.unsplash.com/photo-1604076913837-52ab1731f4cf?auto=format&w=1600&q=60")
     center/cover no-repeat;
-
   opacity: 0.15;
   filter: grayscale(100%) brightness(0.5);
   z-index: 1;
+  animation: bgZoom 12s ease-in-out infinite alternate;
 }
+
+/* ---------------------- ANIMATIONS ---------------------- */
 
 @keyframes fadeIn {
   0% {
@@ -75,5 +81,60 @@
   100% {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+.slide-down {
+  animation: slideDown 1.5s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slideUp 1.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pulse {
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes bgZoom {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.1);
   }
 }
