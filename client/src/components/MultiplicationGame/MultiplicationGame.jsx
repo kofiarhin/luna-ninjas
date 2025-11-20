@@ -1,7 +1,13 @@
 // MultiplicationGame.jsx
-import React, { useEffect, useState } from "react";
-import { BASE_URL } from "../../constants/constans";
+import React, { useEffect, useState, useRef } from "react";
 import "./multiplication-game.styles.scss";
+
+import GameHeader from "../GameHeader/GameHeader";
+import QuestionDisplay from "../QuestionDisplay/QuestionDisplay";
+import AnswerOptions from "../AnswerOptions/AnswerOptions";
+import GameSummary from "../GameSummary/GameSummary";
+import ChatHistory from "../ChatHistory/ChatHistory";
+import WatermelonAnimation from "../WatermelonAnimation/WatermelonAnimation";
 
 const QUESTIONS_PER_GAME = 20;
 const INITIAL_LIVES = 5;
@@ -13,13 +19,15 @@ const LEVELS = {
   ninja: { key: "ninja", label: "Ninja", timePerQuestion: 4 },
 };
 
-const MultiplicationGame = () => {
-  // fetched questions
-  const [questions, setQuestions] = useState([]);
-  const [loadingQuestions, setLoadingQuestions] = useState(true);
-  const [fetchError, setFetchError] = useState(null);
+const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
+  // sounds
+  const correctSoundRef = useRef(null);
+  const wrongSoundRef = useRef(null);
 
-  // game state (same as before)
+  // questions (from props)
+  const [questions, setQuestions] = useState(initialQuestions);
+
+  // game state
   const [question, setQuestion] = useState({
     id: null,
     a: 2,
@@ -62,8 +70,29 @@ const MultiplicationGame = () => {
   const displayLevelKey = currentLevel || selectedLevel;
   const displayLevel = LEVELS[displayLevelKey];
 
-  // ---------- helpers ----------
+  // sync questions when prop changes
+  useEffect(() => {
+    setQuestions(initialQuestions || []);
+  }, [initialQuestions]);
 
+  // sounds preload
+  useEffect(() => {
+    correctSoundRef.current = new Audio("/sounds/correct.mpeg");
+    wrongSoundRef.current = new Audio("/sounds/wrong.mpeg");
+  }, []);
+
+  const playSound = (audioRef) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    try {
+      audio.currentTime = 0;
+      audio.play();
+    } catch {
+      // ignore autoplay errors
+    }
+  };
+
+  // ---------- history helpers ----------
   const getStoredHistory = () => {
     if (typeof window === "undefined") return [];
     try {
@@ -83,52 +112,11 @@ const MultiplicationGame = () => {
     }
   };
 
-  // 🔥 MAIN FETCH: include chat/game history in the request
-  const fetchQuestionsWithHistory = async () => {
-    setLoadingQuestions(true);
-    setFetchError(null);
-
-    const history = getStoredHistory();
-
-    try {
-      const res = await fetch(`${BASE_URL}/api/questions`, {
-        method: "POST", // switch to POST so we can send body
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ history }), // <--- send history to server
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to load questions");
-      }
-
-      const payload = await res.json();
-      console.log("questions payload:", payload);
-
-      const fetched = Array.isArray(payload?.data)
-        ? payload.data
-        : Array.isArray(payload)
-        ? payload
-        : [];
-
-      setQuestions(fetched);
-      setLoadingQuestions(false);
-    } catch (err) {
-      console.error(err);
-      setFetchError(err.message || "Error loading questions");
-      setLoadingQuestions(false);
-    }
-  };
-
-  // initial mount: load history + fetch first batch of questions
   useEffect(() => {
     loadGameHistory();
-    fetchQuestionsWithHistory();
   }, []);
 
-  // ---------- game logic (unchanged except where noted) ----------
-
+  // ---------- game logic ----------
   const generateQuestion = (levelKeyParam) => {
     if (!questions.length) return;
 
@@ -201,7 +189,9 @@ const MultiplicationGame = () => {
           JSON.stringify(newHistory)
         );
         setGameHistory(newHistory);
-      } catch {}
+      } catch {
+        // ignore
+      }
     }
   };
 
@@ -219,12 +209,8 @@ const MultiplicationGame = () => {
     }
   };
 
-  // 🔥 make start game async so it can refresh questions with latest history
-  const handleStartGame = async () => {
-    // always refresh questions so server can adapt to latest history
-    await fetchQuestionsWithHistory();
-
-    if (!questions.length && !loadingQuestions) return;
+  const handleStartGame = () => {
+    if (!questions.length) return;
 
     const levelKey = selectedLevel;
 
@@ -251,6 +237,8 @@ const MultiplicationGame = () => {
     setHasAnswered(true);
     setFeedback("timeout");
     setShowHint(true);
+
+    playSound(wrongSoundRef);
 
     const timeTaken = currentQuestionStartTime
       ? (Date.now() - currentQuestionStartTime) / 1000
@@ -333,6 +321,8 @@ const MultiplicationGame = () => {
         newLives = lives + 1;
       }
 
+      playSound(correctSoundRef);
+
       setWatermelonVisible(true);
       setWatermelonMiss(false);
       setWatermelonSlice(false);
@@ -344,6 +334,8 @@ const MultiplicationGame = () => {
       newFeedback = "wrong";
       newLives = lives - 1;
       newStreak = 0;
+
+      playSound(wrongSoundRef);
 
       setWatermelonVisible(true);
       setWatermelonSlice(false);
@@ -402,51 +394,22 @@ const MultiplicationGame = () => {
   const isInitialState = !gameActive && !gameOver && questionCount === 0;
   const showHistoryPanel = !gameActive;
 
-  const startDisabled =
-    gameActive || loadingQuestions || !!fetchError || !questions.length;
+  const startDisabled = gameActive || !questions.length;
 
-  // ---------- UI (same as before) ----------
+  // ---------- UI ----------
   return (
     <div className={`game-page ${bgFlash ? "game-page-miss" : ""}`}>
       <div className={`game-shell ${gameActive ? "game-shell-centered" : ""}`}>
         <div className="game-card">
-          <div className="game-header">
-            <div className="game-header-left">
-              <h1 className="game-title">
-                times<span>ninja</span>
-              </h1>
-              <div className="game-subtitle">Train your mind</div>
-            </div>
-            <div className="game-header-right">
-              {gameActive && (
-                <div
-                  className={`game-timer ${timeLeft <= 3 ? "timer-low" : ""}`}
-                >
-                  <span className="timer-label">time</span>
-                  <span className="timer-value">{timeLeft}s</span>
-                </div>
-              )}
-              <div className="game-meta">
-                <div className="game-subtitle">{displayLevel.label}</div>
-                {!isInitialState && (
-                  <div className="game-stats">
-                    <div className="stat-pill">
-                      <span className="stat-label">score</span>
-                      <span className="stat-value">{score}</span>
-                    </div>
-                    <div className="stat-pill">
-                      <span className="stat-label">lives</span>
-                      <span className="stat-value">{lives}</span>
-                    </div>
-                    <div className="stat-pill">
-                      <span className="stat-label">streak</span>
-                      <span className="stat-value">{streak}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          <GameHeader
+            gameActive={gameActive}
+            timeLeft={timeLeft}
+            displayLevel={displayLevel}
+            isInitialState={isInitialState}
+            score={score}
+            lives={lives}
+            streak={streak}
+          />
 
           {isInitialState && (
             <div className="level-select">
@@ -465,54 +428,27 @@ const MultiplicationGame = () => {
           )}
 
           {gameActive && (
-            <div className="question-block">
-              <div
-                className={`question-text ${
-                  hasAnswered ? "question-text-muted" : ""
-                }`}
-                key={questionKey}
-              >
-                {question.questionText
-                  ? question.questionText
-                  : `${question.a} × ${question.b} = ?`}
-              </div>
-            </div>
+            <QuestionDisplay
+              question={question}
+              hasAnswered={hasAnswered}
+              questionKey={questionKey}
+            />
           )}
 
           {gameActive ? (
-            <div
-              className={`options-grid ${hasAnswered ? "" : "options-animate"}`}
-            >
-              {options.map((value) => (
-                <button
-                  key={`${questionKey}-${value}`}
-                  className={`option-button ${
-                    feedback === "correct" && value === question.answer
-                      ? "option-correct"
-                      : feedback === "wrong" && value === question.answer
-                      ? "option-reveal"
-                      : ""
-                  }`}
-                  onClick={() => handleAnswer(value)}
-                  disabled={hasAnswered}
-                >
-                  {value}
-                </button>
-              ))}
-            </div>
+            <AnswerOptions
+              options={options}
+              feedback={feedback}
+              question={question}
+              hasAnswered={hasAnswered}
+              handleAnswer={handleAnswer}
+              questionKey={questionKey}
+            />
           ) : (
             <div className="options-placeholder">
-              {loadingQuestions && "Loading questions..."}
-              {fetchError && !loadingQuestions && (
-                <span>Error: {fetchError}</span>
-              )}
-              {!loadingQuestions &&
-                !fetchError &&
-                !questions.length &&
-                "No questions available."}
-              {!loadingQuestions &&
-                !fetchError &&
-                questions.length > 0 &&
+              {!questions.length &&
+                "No questions available. Please provide questions as a prop."}
+              {questions.length > 0 &&
                 "Choose your difficulty level above, then click Start Game to begin training your multiplication skills!"}
             </div>
           )}
@@ -543,85 +479,18 @@ const MultiplicationGame = () => {
             </button>
           </div>
 
-          {gameOver && lastGameSummary && (
-            <div className="game-summary">
-              <div className="summary-line">
-                <span>Final Score</span>
-                <span className="summary-value">{lastGameSummary.score}</span>
-              </div>
-              <div className="summary-line">
-                <span>Accuracy</span>
-                <span className="summary-value">
-                  {lastGameSummary.accuracy}%
-                </span>
-              </div>
-              <div className="summary-line">
-                <span>Lives Remaining</span>
-                <span className="summary-value">
-                  {lastGameSummary.livesRemaining}
-                </span>
-              </div>
-              <div className="summary-line">
-                <span>Questions Answered</span>
-                <span className="summary-value">
-                  {lastGameSummary.totalQuestions}
-                </span>
-              </div>
-            </div>
-          )}
+          {gameOver && <GameSummary summary={lastGameSummary} />}
 
-          {watermelonVisible && (
-            <div className="watermelon-layer">
-              <div
-                className={`watermelon ${
-                  watermelonSlice ? "watermelon-slice" : ""
-                } ${watermelonMiss ? "watermelon-miss" : ""}`}
-                onAnimationEnd={handleSliceAnimationEnd}
-              >
-                <div className="watermelon-halo"></div>
-                <div className="watermelon-half watermelon-left"></div>
-                <div className="watermelon-half watermelon-right"></div>
-                {watermelonSlice && (
-                  <div className="watermelon-slash-line"></div>
-                )}
-              </div>
-            </div>
-          )}
+          <WatermelonAnimation
+            visible={watermelonVisible}
+            slice={watermelonSlice}
+            miss={watermelonMiss}
+            onAnimationEnd={handleSliceAnimationEnd}
+          />
         </div>
 
         {showHistoryPanel && (
-          <aside className="history-panel">
-            <h3 className="history-title">Recent Games</h3>
-            {gameHistory.length > 0 ? (
-              <ul className="history-list">
-                {gameHistory.slice(0, 5).map((game, index) => (
-                  <li key={game.id || index} className="history-item">
-                    <div className="history-top-row">
-                      <span className="history-score">{game.score}</span>
-                      <span className="history-level-tag">
-                        {LEVELS[game.level]?.label || game.level}
-                      </span>
-                    </div>
-                    <div className="history-meta-row">
-                      <span>{game.accuracy}% correct</span>
-                      <span>
-                        {game.correctCount}/{game.totalQuestions}
-                      </span>
-                    </div>
-                    <div className="history-time-row">
-                      {game.timestamp
-                        ? new Date(game.timestamp).toLocaleDateString()
-                        : "Invalid Date"}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="history-empty">
-                No games played yet. Start playing to see your history!
-              </p>
-            )}
-          </aside>
+          <ChatHistory gameHistory={gameHistory} levelsMap={LEVELS} />
         )}
       </div>
     </div>
