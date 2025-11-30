@@ -1,0 +1,130 @@
+name: Deploy LunarNinjas Client & Test
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - "client/**"
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # 1. Deploy Client to Namecheap
+  deploy_client:
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Build client
+        working-directory: client
+        run: |
+          npm ci
+          npm run build
+
+      - name: Upload dist to Namecheap
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER_LUNANINJAS }}
+          username: ${{ secrets.FTP_USERNAME_LUNANINJAS }}
+          password: ${{ secrets.FTP_PASSWORD_LUNANINJAS }}
+          port: ${{ secrets.FTP_PORT_LUNANINJAS }}
+          protocol: ${{ secrets.FTP_PROTOCOL_LUNANINJAS }}
+          local-dir: client/dist/
+          server-dir: /public_html/lunaninjas.com/  # Verify this path in cPanel
+          exclude: |
+            **/.git*
+            **/.github/**
+            **/node_modules/**
+
+  # 2. Run Playwright Tests (Runs ONLY if deploy_client succeeds)
+  playwright_tests:
+    needs: [deploy_client]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install @playwright/test
+          npx playwright install --with-deps
+
+      - name: Create production.spec.js
+        env:
+          E2E_EMAIL: ${{ secrets.E2E_EMAIL_LUNANINJAS }}
+          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD_LUNANINJAS }}
+        run: |
+          mkdir -p tests
+          cat << 'EOF' > tests/production.spec.js
+          const { test, expect } = require('@playwright/test');
+
+          test('Login then send a chat message', async ({ page }) => {
+            // 1. Go to Login
+            await page.goto('https://lunaninjas.com/login', { waitUntil: 'domcontentloaded' });
+
+            // 2. Fill Credentials
+            const emailInput = page.locator('input[name="email"], input[type="email"]');
+            await emailInput.first().fill(process.env.E2E_EMAIL);
+
+            const passInput = page.locator('input[name="password"], input[type="password"]');
+            await passInput.first().fill(process.env.E2E_PASSWORD);
+
+            // 3. Submit
+            const loginBtn = page.locator('button[type="submit"], button:has-text("Login")');
+            await loginBtn.first().click();
+
+            // 4. Wait for redirect away from login
+            await page.waitForURL(/^(?!.*\/login\b).*$/, { timeout: 15000 });
+
+            // 5. Go to Chat
+            await page.goto('https://lunaninjas.com/chat', { waitUntil: 'domcontentloaded' });
+            await page.waitForLoadState('networkidle');
+
+            // 6. Count messages before sending
+            const msgSelector = '.message, .chat-message, .assistant, .user';
+            const beforeCount = await page.locator(msgSelector).count();
+
+            // 7. Find Input and Send Message
+            const input = page.locator('textarea[name="message"], input[name="message"], textarea').first();
+            await input.fill('Hello! Automated deployment test.');
+            
+            // Try clicking send, fallback to Enter
+            const sendBtn = page.locator('button[type="submit"], button:has-text("Send")').first();
+            if (await sendBtn.isVisible()) {
+              await sendBtn.click();
+            } else {
+              await page.keyboard.press('Enter');
+            }
+
+            // 8. Verify new message appears (User or Bot)
+            await expect.poll(async () => await page.locator(msgSelector).count(), {
+              timeout: 20000
+            }).toBeGreaterThan(beforeCount);
+          });
+          EOF
+
+      - name: Run Playwright tests
+        run: npx playwright test tests/production.spec.js --reporter=html,line
+
+      - name: Upload Report on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 5
