@@ -1,342 +1,198 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap");
 
-// --- Variables ---
-$neon-blue: #00f3ff;
-$neon-purple: #bc13fe;
-$glass-bg: rgba(10, 10, 20, 0.85);
-$text-light: #ececf1;
-
-// --- Animations ---
-@keyframes float {
-
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-12px);
-  }
-}
-
-@keyframes fadeInSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes moveParticle {
-  0% {
-    transform: translateY(0) rotate(0deg);
-    opacity: 0;
-  }
-
-  10% {
-    opacity: 1;
-  }
-
-  90% {
-    opacity: 1;
-  }
-
-  100% {
-    transform: translateY(-100vh) rotate(720deg);
-    opacity: 0;
-  }
-}
-
-// --- Styles ---
-.home-container {
-  height: 100vh;
+.landing-wrapper {
+  min-height: 100vh;
   width: 100%;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
   position: relative;
-  font-family: 'Outfit', sans-serif;
-}
-
-// --- Particles ---
-.particles {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
   overflow: hidden;
-  pointer-events: none; // Let clicks pass through
-  z-index: 1;
-
-  span {
-    position: absolute;
-    display: block;
-    list-style: none;
-    width: 8px;
-    height: 8px;
-    background: rgba($neon-blue, 0.6);
-    box-shadow: 0 0 10px $neon-blue;
-    animation: moveParticle 15s linear infinite;
-    bottom: -50px; // Start below screen
-    border-radius: 50%;
-
-    // Randomize particle positions and timing
-    &:nth-child(1) {
-      left: 10%;
-      width: 10px;
-      height: 10px;
-      animation-duration: 12s;
-      animation-delay: 0s;
-    }
-
-    &:nth-child(2) {
-      left: 20%;
-      width: 6px;
-      height: 6px;
-      animation-duration: 8s;
-      animation-delay: 2s;
-      background: rgba($neon-purple, 0.6);
-      box-shadow: 0 0 10px $neon-purple;
-    }
-
-    &:nth-child(3) {
-      left: 35%;
-      width: 12px;
-      height: 12px;
-      animation-duration: 15s;
-      animation-delay: 4s;
-    }
-
-    &:nth-child(4) {
-      left: 50%;
-      width: 4px;
-      height: 4px;
-      animation-duration: 10s;
-      animation-delay: 0s;
-      background: rgba($neon-purple, 0.6);
-      box-shadow: 0 0 10px $neon-purple;
-    }
-
-    &:nth-child(5) {
-      left: 65%;
-      width: 8px;
-      height: 8px;
-      animation-duration: 18s;
-      animation-delay: 0s;
-    }
-
-    &:nth-child(6) {
-      left: 80%;
-      width: 5px;
-      height: 5px;
-      animation-duration: 11s;
-      animation-delay: 3s;
-      background: rgba($neon-purple, 0.6);
-      box-shadow: 0 0 10px $neon-purple;
-    }
-
-    &:nth-child(7) {
-      left: 90%;
-      width: 9px;
-      height: 9px;
-      animation-duration: 14s;
-      animation-delay: 5s;
-    }
-
-    &:nth-child(8) {
-      left: 15%;
-      width: 7px;
-      height: 7px;
-      animation-duration: 16s;
-      animation-delay: 7s;
-    }
-
-    &:nth-child(9) {
-      left: 45%;
-      width: 5px;
-      height: 5px;
-      animation-duration: 9s;
-      animation-delay: 2s;
-      background: rgba($neon-purple, 0.6);
-      box-shadow: 0 0 10px $neon-purple;
-    }
-
-    &:nth-child(10) {
-      left: 75%;
-      width: 11px;
-      height: 11px;
-      animation-duration: 13s;
-      animation-delay: 6s;
-    }
-  }
+  font-family: "Outfit", sans-serif;
+  background: radial-gradient(
+      1200px 600px at 20% 15%,
+      rgba(125, 78, 255, 0.2),
+      transparent 55%
+    ),
+    radial-gradient(
+      900px 500px at 85% 35%,
+      rgba(0, 243, 255, 0.16),
+      transparent 55%
+    ),
+    linear-gradient(180deg, #07070b, #05060a 55%, #04050a);
+  display: grid;
+  place-items: center;
+  padding: 48px 18px;
 }
 
-.game-menu {
+.ninja-bg {
+  position: absolute;
+  inset: -40px;
+  background: radial-gradient(
+      circle at 25% 30%,
+      rgba(0, 243, 255, 0.1),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 70% 25%,
+      rgba(188, 19, 254, 0.12),
+      transparent 45%
+    ),
+    radial-gradient(circle at 40% 75%, rgba(188, 19, 254, 0.1), transparent 45%);
+  filter: blur(6px);
+  transform: scale(1.05);
+  animation: bg-float 10s ease-in-out infinite;
+}
+
+.landing-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+      800px 400px at 50% 10%,
+      rgba(255, 255, 255, 0.06),
+      transparent 60%
+    ),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.55));
+  pointer-events: none;
+}
+
+.landing-noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.06;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.06) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
+}
+
+.landing-content {
+  width: 100%;
+  max-width: 760px;
   position: relative;
   z-index: 2;
+  text-align: left;
+  padding: 28px 22px;
+  border-radius: 22px;
+  background: rgba(10, 10, 18, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(18px);
+}
+
+.landing-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.86);
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.landing-title {
+  margin: 18px 0 10px;
+  color: #ffffff;
+  font-weight: 900;
+  letter-spacing: -0.6px;
+  line-height: 1.02;
+  font-size: 2.6rem;
+}
+
+.landing-title-accent {
+  background: linear-gradient(90deg, #00f3ff, #bc13fe);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.landing-subtitle {
+  margin: 0 0 22px;
+  color: rgba(236, 236, 241, 0.85);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  max-width: 52ch;
+}
+
+.landing-actions {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  width: 90%;
-  max-width: 550px; // Default desktop width
-
-  .logo-img {
-    width: 85%;
-    max-width: 400px;
-    margin-bottom: -30px;
-    z-index: 5;
-    animation: float 4s ease-in-out infinite;
-    filter: drop-shadow(0 0 15px rgba($neon-blue, 0.3));
-  }
+  gap: 12px;
+  margin-top: 18px;
 }
 
-.glass-panel {
-  background: $glass-bg;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding: 4.5rem 2.5rem 2.5rem 2.5rem;
-  border-radius: 24px;
-  text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+.start-btn {
   width: 100%;
-  position: relative;
-  overflow: hidden;
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba($neon-blue, 0.3), transparent);
-  }
-}
-
-.hero-title {
-  color: #fff;
-  font-weight: 800;
-  font-size: 2.5rem;
-  margin: 0.5rem 0 1rem 0;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  line-height: 1.1;
-  opacity: 0;
-  animation: fadeInSlideUp 0.8s ease-out forwards;
-  animation-delay: 0.2s;
-
-  span {
-    color: $neon-blue;
-  }
-}
-
-.hero-text {
-  color: rgba($text-light, 0.9);
-  font-size: 1.15rem;
-  line-height: 1.6;
-  margin-bottom: 2.5rem;
-  font-weight: 300;
-  max-width: 90%;
-  margin-left: auto;
-  margin-right: auto;
-  opacity: 0;
-  animation: fadeInSlideUp 0.8s ease-out forwards;
-  animation-delay: 0.4s;
-}
-
-.play-button {
-  width: 100%;
-  background: linear-gradient(90deg, #9d00ff, #d300ff);
-  color: #fff;
-  font-family: 'Outfit', sans-serif;
-  font-weight: 700;
-  font-size: 1.3rem;
-  padding: 1.1rem 0;
+  max-width: 360px;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
+  padding: 14px 16px;
   cursor: pointer;
+  font-family: "Outfit", sans-serif;
+  font-weight: 800;
+  letter-spacing: 1.6px;
   text-transform: uppercase;
-  letter-spacing: 3px;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 0 15px rgba(188, 19, 254, 0.4);
-  opacity: 0;
-  animation: fadeInSlideUp 0.8s ease-out forwards;
-  animation-delay: 0.6s;
+  font-size: 1.05rem;
+  color: #0b0b10;
+  background: linear-gradient(90deg, #00f3ff, #bc13fe);
+  box-shadow: 0 12px 28px rgba(188, 19, 254, 0.25);
+  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: 0.5s;
+.start-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 42px rgba(188, 19, 254, 0.35);
+  filter: brightness(1.05);
+}
+
+.start-btn:active {
+  transform: translateY(0px);
+  box-shadow: 0 10px 24px rgba(188, 19, 254, 0.22);
+}
+
+.landing-hint {
+  color: rgba(236, 236, 241, 0.65);
+  font-size: 0.95rem;
+}
+
+@keyframes bg-float {
+  0%,
+  100% {
+    transform: translateY(0px) scale(1.05);
   }
-
-  &:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 0 30px rgba(188, 19, 254, 0.7);
-
-    &::before {
-      left: 100%;
-    }
-  }
-
-  &:active {
-    transform: translateY(1px);
-    box-shadow: 0 0 10px rgba(188, 19, 254, 0.5);
+  50% {
+    transform: translateY(-10px) scale(1.05);
   }
 }
 
-// --- Responsive Media Queries ---
-@media (max-width: 768px) {
-  .game-menu {
-    width: 95%; // Wider on mobile
+@media (min-width: 768px) {
+  .landing-wrapper {
+    padding: 72px 28px;
   }
 
-  .glass-panel {
-    padding: 4rem 1.5rem 2rem 1.5rem; // Less padding
+  .landing-content {
+    padding: 38px 34px;
   }
 
-  .hero-title {
-    font-size: 2rem;
+  .landing-title {
+    font-size: 3.3rem;
   }
 
-  .hero-text {
-    font-size: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .play-button {
+  .landing-subtitle {
     font-size: 1.1rem;
-    padding: 1rem 0;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero-title {
-    font-size: 1.75rem;
   }
 
-  .glass-panel {
-    padding-top: 3.5rem;
+  .landing-actions {
+    flex-direction: row;
+    align-items: center;
   }
 
-  .game-menu .logo-img {
-    width: 100%;
-    margin-bottom: -20px;
+  .landing-hint {
+    margin-left: 10px;
   }
 }

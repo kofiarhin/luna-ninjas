@@ -9,39 +9,44 @@ const Home = () => {
   const handleStart = (e) => {
     e.preventDefault();
 
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0; // restart from beginning
-      audioRef.current.volume = 1;
-
-      audioRef.current.play().catch((err) => {
-        console.error("Audio play error:", err);
-      });
+    const audio = audioRef.current;
+    if (audio) {
+      audio.currentTime = 0;
+      audio.volume = 1;
+      audio.play().catch(() => {});
     }
 
-    // small delay so you actually hear the sound
-    setTimeout(() => {
-      navigate("/game");
-    }, 1700);
+    setTimeout(() => navigate("/game"), 900);
   };
 
   return (
     <div className="landing-wrapper">
-      {/* file must be: client/public/sounds/correct.mpeg */}
       <audio ref={audioRef} src="/sounds/correct.mp3" preload="auto" />
 
-      <div className="landing-content fade-in">
-        <h1 className="landing-title slide-down">Welcome to Luna Ninjas</h1>
+      <div className="ninja-bg" aria-hidden="true" />
+      <div className="landing-overlay" aria-hidden="true" />
+      <div className="landing-noise" aria-hidden="true" />
+
+      <main className="landing-content">
+        <div className="landing-badge">Luna Ninjas</div>
+
+        <h1 className="landing-title">
+          Master math with{" "}
+          <span className="landing-title-accent">ninja quests</span>
+        </h1>
+
         <p className="landing-subtitle">
-          Master math through epic ninja quests.
+          Fast rounds. Clean streaks. Level up your skills.
         </p>
 
-        {/* use a button, we control navigation manually */}
-        <button className="start-btn" onClick={handleStart}>
-          Begin Your Quest
-        </button>
-      </div>
-      <p>remove this </p>
-      <div className="ninja-bg"></div>
+        <div className="landing-actions">
+          <button className="start-btn" onClick={handleStart}>
+            Begin Your Quest
+          </button>
+
+          <div className="landing-hint">Tip: headphones on 🔊</div>
+        </div>
+      </main>
     </div>
   );
 };
