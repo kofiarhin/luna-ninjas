@@ -1,0 +1,11 @@
+###
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+    "clerkUserId": "user_2aBcDeFgHiJkLmNoPqRsTuVwXyZ",
+    "email": "test@example.com",
+    "firstName": "Kofi",
+    "lastName": "Mensah",
+    "imageUrl": "https://example.com/avatars/kofi.png"
+  }

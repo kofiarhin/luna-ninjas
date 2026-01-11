@@ -1,10 +1,5 @@
-// client/src/App.jsx  (SIMPLE)
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+// client/src/App.jsx
+import { Routes, Route, Navigate } from "react-router-dom";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 
 import Header from "./components/Header/Header";
@@ -12,17 +7,18 @@ import Home from "./Pages/Home/Home";
 import Game from "./Pages/Game/Game";
 import Login from "./Pages/Login/Login";
 import Register from "./Pages/Register/Register";
+import PostSignUp from "./Pages/PostSignUp/PostSignUp";
 
 const App = () => {
   return (
-    <Router>
+    <>
       <Header />
 
       <Routes>
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/post-signup" element={<PostSignUp />} />
 
-        {/* protect game */}
         <Route
           path="/game"
           element={
@@ -37,11 +33,10 @@ const App = () => {
           }
         />
 
-        {/* IMPORTANT: * fixes /login/sso-callback */}
         <Route path="/login/*" element={<Login />} />
         <Route path="/register/*" element={<Register />} />
       </Routes>
-    </Router>
+    </>
   );
 };
 

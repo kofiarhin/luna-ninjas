@@ -9,7 +9,7 @@ const Register = () => {
           routing="path"
           path="/register"
           signInUrl="/login"
-          afterSignUpUrl="/game"
+          afterSignUpUrl="/post-signup"
         />
       </div>
     </div>
