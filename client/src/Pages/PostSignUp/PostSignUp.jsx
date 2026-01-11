@@ -1,6 +1,7 @@
 // client/src/pages/PostSignUp.jsx
 import { useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
+import { BASE_URL } from "../../constants/constans";
 
 export default function PostSignUp() {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -17,7 +18,7 @@ export default function PostSignUp() {
         imageUrl: user.imageUrl || "",
       };
 
-      const res = await fetch("http://localhost:5000/api/auth/register", {
+      const res = await fetch(`${BASE_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
