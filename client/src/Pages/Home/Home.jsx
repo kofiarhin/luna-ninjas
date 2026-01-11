@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import "./home.styles.scss";
 
 const Home = () => {
-<<<<<<< HEAD
   const audioRef = useRef(null);
   const navigate = useNavigate();
 
@@ -42,11 +42,6 @@ const Home = () => {
       </div>
 
       <div className="ninja-bg"></div>
-=======
-  return (
-    <div>
-      <h1 className="heading center">Luna Ninjas</h1>
->>>>>>> 1493d67 (add clerk authentication)
     </div>
   );
 };
