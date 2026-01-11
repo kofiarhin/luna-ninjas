@@ -40,7 +40,7 @@ const Home = () => {
           Begin Your Quest
         </button>
       </div>
-
+      <p>remove this </p>
       <div className="ninja-bg"></div>
     </div>
   );
