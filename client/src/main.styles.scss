@@ -31,3 +31,20 @@ body {
     text-align: center;
   }
 }
+
+/* client/src/main.styles.scss */
+
+/* existing global styles... */
+
+.auth-page {
+  min-height: calc(100vh - 60px);
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background: #0b0b0b;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 420px;
+}
