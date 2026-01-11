@@ -2,9 +2,6 @@ const User = require("../models/user.model");
 
 const registerUser = async (req, res, next) => {
   try {
-    await User.deleteMany(); //will remove this later in production
-
-    console.log(req.body);
     const { clerkUserId, email, firstName, lastName, imageUrl } = req.body;
     if (!clerkUserId) return res.status(401).json({ message: "Unauthorized" });
 
