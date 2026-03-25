@@ -1,12 +1,29 @@
+// client/src/Pages/Game/Game.jsx
+import React, { useState } from "react";
+import TableSelector from "../../components/TableSelector/TableSelector";
 import MultiplicationGame from "../../components/MultiplicationGame/MultiplicationGame";
-import sampleQuestions from "./sampledata";
 
 const Game = () => {
+  const [selectedTable, setSelectedTable] = useState(null);
+
+  const handleSelect = (table) => {
+    setSelectedTable(table);
+  };
+
+  const handlePlayAgain = () => {
+    setSelectedTable(null);
+  };
+
   return (
     <div>
-      <h1 className="heading center">
-        <MultiplicationGame questions={sampleQuestions} />
-      </h1>
+      {selectedTable === null ? (
+        <TableSelector onSelect={handleSelect} selectedTable={selectedTable} />
+      ) : (
+        <MultiplicationGame
+          table={selectedTable}
+          onPlayAgain={handlePlayAgain}
+        />
+      )}
     </div>
   );
 };

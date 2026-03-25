@@ -6,43 +6,48 @@ import GameHeader from "../GameHeader/GameHeader";
 import QuestionDisplay from "../QuestionDisplay/QuestionDisplay";
 import AnswerOptions from "../AnswerOptions/AnswerOptions";
 import GameSummary from "../GameSummary/GameSummary";
-import ChatHistory from "../ChatHistory/ChatHistory";
 import WatermelonAnimation from "../WatermelonAnimation/WatermelonAnimation";
 
-const QUESTIONS_PER_GAME = 20;
+import { generateRound } from "../../utils/questionGenerator";
+import { getPointsPerCorrect } from "../../utils/scoring";
+import useSubmitScore from "../../hooks/useSubmitScore";
+
+const QUESTIONS_PER_GAME = 12;
 const INITIAL_LIVES = 5;
 const STREAK_FOR_EXTRA_LIFE = 5;
+const TIME_PER_QUESTION = 8; // fixed 8-second timer
 
-const LEVELS = {
-  easy: { key: "easy", label: "Easy", timePerQuestion: 8 },
-  medium: { key: "medium", label: "Medium", timePerQuestion: 6 },
-  ninja: { key: "ninja", label: "Ninja", timePerQuestion: 4 },
-};
+// Minimal level descriptor for GameHeader (which expects displayLevel.label)
+const DISPLAY_LEVEL = { label: "" };
 
-const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
+/**
+ * Props:
+ *   table      {number}   - The selected times table (2–12)
+ *   onPlayAgain {Function} - Called when user clicks Play Again (returns to table selection)
+ */
+const MultiplicationGame = ({ table, onPlayAgain }) => {
   // sounds
   const correctSoundRef = useRef(null);
   const wrongSoundRef = useRef(null);
 
-  // questions (from props)
-  const [questions, setQuestions] = useState(initialQuestions);
+  // questions for this round (generated fresh on game start)
+  const [questions, setQuestions] = useState([]);
 
   // game state
   const [question, setQuestion] = useState({
     id: null,
-    a: 2,
-    b: 2,
-    answer: 4,
+    a: table,
+    b: 1,
+    answer: table,
     questionText: "",
-    hint: "",
   });
-  const [options, setOptions] = useState([4]);
+  const [options, setOptions] = useState([]);
   const [feedback, setFeedback] = useState("");
   const [watermelonVisible, setWatermelonVisible] = useState(false);
   const [watermelonSlice, setWatermelonSlice] = useState(false);
   const [watermelonMiss, setWatermelonMiss] = useState(false);
 
-  const [questionCount, setQuestionCount] = useState(0);
+  const [questionIndex, setQuestionIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [questionKey, setQuestionKey] = useState(0);
   const [bgFlash, setBgFlash] = useState(false);
@@ -54,26 +59,18 @@ const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
   const [lives, setLives] = useState(INITIAL_LIVES);
   const [streak, setStreak] = useState(0);
 
-  const [selectedLevel, setSelectedLevel] = useState("easy");
-  const [currentLevel, setCurrentLevel] = useState("easy");
-
   const [hasAnswered, setHasAnswered] = useState(false);
   const [questionLog, setQuestionLog] = useState([]);
-  const [currentQuestionStartTime, setCurrentQuestionStartTime] =
-    useState(null);
+  const [currentQuestionStartTime, setCurrentQuestionStartTime] = useState(null);
 
-  const [gameHistory, setGameHistory] = useState([]);
   const [lastGameSummary, setLastGameSummary] = useState(null);
 
-  const [showHint, setShowHint] = useState(false);
-
-  const displayLevelKey = currentLevel || selectedLevel;
-  const displayLevel = LEVELS[displayLevelKey];
-
-  // sync questions when prop changes
-  useEffect(() => {
-    setQuestions(initialQuestions || []);
-  }, [initialQuestions]);
+  // Score submission
+  const { submit, loading: submitLoading, error: submitError } = useSubmitScore();
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+  // Hold round data for retry
+  const pendingScoreRef = useRef(null);
 
   // sounds preload
   useEffect(() => {
@@ -92,69 +89,53 @@ const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
     }
   };
 
-  // ---------- history helpers ----------
-  const getStoredHistory = () => {
-    if (typeof window === "undefined") return [];
-    try {
-      const stored = window.localStorage.getItem("multiplicationGameHistory");
-      const parsed = stored ? JSON.parse(stored) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  };
+  // ---------- question display helpers ----------
+  const showQuestion = (questionsArr, index, levelKey) => {
+    if (index >= questionsArr.length) return;
 
-  const loadGameHistory = () => {
-    const parsed = getStoredHistory();
-    if (parsed.length) {
-      const sorted = [...parsed].sort((a, b) => b.score - a.score);
-      setGameHistory(sorted);
-    }
-  };
-
-  useEffect(() => {
-    loadGameHistory();
-  }, []);
-
-  // ---------- game logic ----------
-  const generateQuestion = (levelKeyParam) => {
-    if (!questions.length) return;
-
-    const levelKey = levelKeyParam || currentLevel || selectedLevel;
-    const levelConfig = LEVELS[levelKey] || LEVELS.easy;
-    const timeForQuestion = levelConfig.timePerQuestion;
-
-    const randomIndex = Math.floor(Math.random() * questions.length);
-    const q = questions[randomIndex];
-
-    const correct = q.correctAnswer;
-    const rawOptions = [correct, ...(q.wrongAnswers || [])];
-    const uniqueOptions = Array.from(new Set(rawOptions));
-    const shuffled = uniqueOptions.sort(() => Math.random() - 0.5);
+    const q = questionsArr[index];
 
     setQuestion({
-      id: q.id,
+      id: `${q.a}-${q.b}-${index}`,
       a: q.a,
       b: q.b,
-      answer: correct,
+      answer: q.correctAnswer,
       questionText: q.questionText,
-      hint: q.hint,
     });
-    setOptions(shuffled);
+    setOptions(q.options);
     setFeedback("");
-    setShowHint(false);
     setHasAnswered(false);
-    setTimeLeft(timeForQuestion);
+    setTimeLeft(TIME_PER_QUESTION);
     setQuestionKey((prev) => prev + 1);
     setCurrentQuestionStartTime(Date.now());
   };
 
-  const finishGame = (finalQuestionCount, finalLives, finalScore, finalLog) => {
+  // ---------- score submission ----------
+  const submitScore = async (finalCorrectCount) => {
+    setSubmitAttempted(true);
+    setSubmitSuccess(false);
+    pendingScoreRef.current = { table, correctCount: finalCorrectCount };
+
+    try {
+      await submit({ table, correctCount: finalCorrectCount });
+      setSubmitSuccess(true);
+    } catch {
+      // error is stored in submitError from the hook
+    }
+  };
+
+  const handleRetrySubmit = () => {
+    if (!pendingScoreRef.current) return;
+    submitScore(pendingScoreRef.current.correctCount);
+  };
+
+  // ---------- game logic ----------
+  const finishGame = (nextQuestionIndex, nextLives, nextScore, updatedLog) => {
     setGameActive(false);
     setGameOver(true);
 
-    const correctCount = finalLog.filter((q) => q.isCorrect).length;
-    const totalQuestions = finalLog.length;
+    const correctCount = updatedLog.filter((q) => q.isCorrect).length;
+    const totalQuestions = updatedLog.length;
     const accuracy =
       totalQuestions > 0
         ? Math.round((correctCount / totalQuestions) * 100)
@@ -163,62 +144,40 @@ const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
     const summary = {
       id: Date.now(),
       timestamp: Date.now(),
-      level: currentLevel,
-      score: finalScore,
+      table,
+      score: nextScore,
       correctCount,
       totalQuestions,
       accuracy,
-      livesRemaining: finalLives,
+      livesRemaining: nextLives,
     };
 
     setLastGameSummary(summary);
-
-    if (typeof window !== "undefined") {
-      try {
-        const stored = window.localStorage.getItem("multiplicationGameHistory");
-        let parsed = [];
-        if (stored) {
-          const existing = JSON.parse(stored);
-          if (Array.isArray(existing)) parsed = existing;
-        }
-        const newHistory = [...parsed, { ...summary, history: finalLog }].sort(
-          (a, b) => b.score - a.score
-        );
-        window.localStorage.setItem(
-          "multiplicationGameHistory",
-          JSON.stringify(newHistory)
-        );
-        setGameHistory(newHistory);
-      } catch {
-        // ignore
-      }
-    }
+    submitScore(correctCount);
   };
 
   const proceedAfterQuestion = (
-    nextQuestionCount,
+    nextQuestionIndex,
     nextLives,
     nextScore,
     updatedLog
   ) => {
-    const maxQuestions = Math.min(QUESTIONS_PER_GAME, questions.length || 0);
-    if (nextLives <= 0 || nextQuestionCount >= maxQuestions) {
-      finishGame(nextQuestionCount, nextLives, nextScore, updatedLog);
+    if (nextLives <= 0 || nextQuestionIndex >= QUESTIONS_PER_GAME) {
+      finishGame(nextQuestionIndex, nextLives, nextScore, updatedLog);
     } else {
-      generateQuestion();
+      showQuestion(questions, nextQuestionIndex, null);
+      setQuestionIndex(nextQuestionIndex);
     }
   };
 
   const handleStartGame = () => {
-    if (!questions.length) return;
+    const freshQuestions = generateRound(table);
 
-    const levelKey = selectedLevel;
-
-    setCurrentLevel(levelKey);
+    setQuestions(freshQuestions);
     setScore(0);
     setLives(INITIAL_LIVES);
     setStreak(0);
-    setQuestionCount(0);
+    setQuestionIndex(0);
     setQuestionLog([]);
     setFeedback("");
     setWatermelonVisible(false);
@@ -227,16 +186,30 @@ const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
     setGameOver(false);
     setGameActive(true);
     setHasAnswered(false);
-    setShowHint(false);
+    setLastGameSummary(null);
+    setSubmitAttempted(false);
+    setSubmitSuccess(false);
+    pendingScoreRef.current = null;
 
-    generateQuestion(levelKey);
+    // Show first question from freshly generated set
+    const q = freshQuestions[0];
+    setQuestion({
+      id: `${q.a}-${q.b}-0`,
+      a: q.a,
+      b: q.b,
+      answer: q.correctAnswer,
+      questionText: q.questionText,
+    });
+    setOptions(q.options);
+    setTimeLeft(TIME_PER_QUESTION);
+    setQuestionKey((prev) => prev + 1);
+    setCurrentQuestionStartTime(Date.now());
   };
 
   const handleTimeout = () => {
     if (!gameActive || hasAnswered) return;
     setHasAnswered(true);
     setFeedback("timeout");
-    setShowHint(true);
 
     playSound(wrongSoundRef);
 
@@ -247,7 +220,7 @@ const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
     const newLives = lives - 1;
     const newStreak = 0;
     const newScore = score;
-    const newQuestionCount = questionCount + 1;
+    const newQuestionIndex = questionIndex + 1;
 
     setWatermelonVisible(true);
     setWatermelonSlice(false);
@@ -264,7 +237,6 @@ const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
       userAnswer: null,
       isCorrect: false,
       timeTaken,
-      level: currentLevel,
       outcome: "timeout",
     };
 
@@ -274,10 +246,9 @@ const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
     setLives(newLives);
     setStreak(newStreak);
     setScore(newScore);
-    setQuestionCount(newQuestionCount);
 
     setTimeout(() => {
-      proceedAfterQuestion(newQuestionCount, newLives, newScore, updatedLog);
+      proceedAfterQuestion(newQuestionIndex, newLives, newScore, updatedLog);
     }, 900);
   };
 
@@ -307,6 +278,8 @@ const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
       ? (Date.now() - currentQuestionStartTime) / 1000
       : null;
 
+    const pointsPerCorrect = getPointsPerCorrect(table);
+
     let newLives = lives;
     let newScore = score;
     let newStreak = streak;
@@ -314,7 +287,7 @@ const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
 
     if (isCorrect) {
       newFeedback = "correct";
-      newScore = score + 10;
+      newScore = score + pointsPerCorrect;
       newStreak = streak + 1;
 
       if (newStreak > 0 && newStreak % STREAK_FOR_EXTRA_LIFE === 0) {
@@ -343,10 +316,9 @@ const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
 
       setBgFlash(true);
       setTimeout(() => setBgFlash(false), 220);
-      setShowHint(true);
     }
 
-    const newQuestionCount = questionCount + 1;
+    const newQuestionIndex = questionIndex + 1;
 
     const questionEntry = {
       id: question.id,
@@ -356,7 +328,6 @@ const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
       userAnswer: value,
       isCorrect,
       timeTaken,
-      level: currentLevel,
       outcome: isCorrect ? "correct" : "wrong",
     };
 
@@ -367,12 +338,11 @@ const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
     setLives(newLives);
     setScore(newScore);
     setStreak(newStreak);
-    setQuestionCount(newQuestionCount);
 
     const delay = isCorrect ? 700 : 900;
 
     setTimeout(() => {
-      proceedAfterQuestion(newQuestionCount, newLives, newScore, updatedLog);
+      proceedAfterQuestion(newQuestionIndex, newLives, newScore, updatedLog);
     }, delay);
   };
 
@@ -382,19 +352,12 @@ const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
     setWatermelonMiss(false);
   };
 
-  const handleLevelChange = (levelKey) => {
-    if (gameActive) return;
-    setSelectedLevel(levelKey);
-  };
-
   const handlePlayAgain = () => {
-    handleStartGame();
+    // Return to table selection in Game.jsx
+    if (onPlayAgain) onPlayAgain();
   };
 
-  const isInitialState = !gameActive && !gameOver && questionCount === 0;
-  const showHistoryPanel = !gameActive;
-
-  const startDisabled = gameActive || !questions.length;
+  const isInitialState = !gameActive && !gameOver;
 
   // ---------- UI ----------
   return (
@@ -404,7 +367,7 @@ const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
           <GameHeader
             gameActive={gameActive}
             timeLeft={timeLeft}
-            displayLevel={displayLevel}
+            displayLevel={DISPLAY_LEVEL}
             isInitialState={isInitialState}
             score={score}
             lives={lives}
@@ -413,17 +376,14 @@ const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
 
           {isInitialState && (
             <div className="level-select">
-              {Object.values(LEVELS).map((level) => (
-                <button
-                  key={level.key}
-                  className={`level-button ${
-                    selectedLevel === level.key ? "level-active" : ""
-                  }`}
-                  onClick={() => handleLevelChange(level.key)}
-                >
-                  {level.label}
-                </button>
-              ))}
+              <div className="table-ready">
+                <p className="table-ready__chosen">
+                  You chose: <strong>&times;{table}</strong>
+                </p>
+                <p className="table-ready__pts">
+                  {getPointsPerCorrect(table)} pts per correct answer
+                </p>
+              </div>
             </div>
           )}
 
@@ -445,18 +405,17 @@ const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
               questionKey={questionKey}
             />
           ) : (
-            <div className="options-placeholder">
-              {!questions.length &&
-                "No questions available. Please provide questions as a prop."}
-              {questions.length > 0 &&
-                "Choose your difficulty level above, then click Start Game to begin training your multiplication skills!"}
-            </div>
+            !gameOver && (
+              <div className="options-placeholder">
+                Click Start Game to begin!
+              </div>
+            )
           )}
 
           {feedback && (
             <div className={`feedback-text feedback-${feedback}`}>
               {feedback === "correct"
-                ? "Correct! 🥒"
+                ? "Correct!"
                 : feedback === "wrong"
                 ? "Oops! Wrong answer"
                 : feedback === "timeout"
@@ -465,21 +424,52 @@ const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
             </div>
           )}
 
-          {showHint && question.hint && (
-            <div className="hint-text">Hint: {question.hint}</div>
+          {!gameOver && (
+            <div className="game-controls-row">
+              {isInitialState && (
+                <button
+                  className="start-button"
+                  onClick={handleStartGame}
+                >
+                  Start Game
+                </button>
+              )}
+            </div>
           )}
 
-          <div className="game-controls-row">
-            <button
-              className="start-button"
-              onClick={isInitialState ? handleStartGame : handlePlayAgain}
-              disabled={startDisabled}
-            >
-              {isInitialState ? "Start Game" : "Play Again"}
-            </button>
-          </div>
+          {gameOver && (
+            <>
+              <GameSummary summary={lastGameSummary} />
 
-          {gameOver && <GameSummary summary={lastGameSummary} />}
+              <div className="score-submission">
+                {submitAttempted && submitLoading && (
+                  <p className="score-submission__status">Saving score...</p>
+                )}
+                {submitAttempted && !submitLoading && submitSuccess && (
+                  <p className="score-submission__status score-submission__status--success">
+                    Score saved!
+                  </p>
+                )}
+                {submitAttempted && !submitLoading && submitError && (
+                  <div className="score-submission__error">
+                    <p>Could not save score — {submitError}</p>
+                    <button
+                      className="score-submission__retry"
+                      onClick={handleRetrySubmit}
+                    >
+                      Retry
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="game-controls-row">
+                <button className="start-button" onClick={handlePlayAgain}>
+                  Play Again
+                </button>
+              </div>
+            </>
+          )}
 
           <WatermelonAnimation
             visible={watermelonVisible}
@@ -488,10 +478,6 @@ const MultiplicationGame = ({ questions: initialQuestions = [] }) => {
             onAnimationEnd={handleSliceAnimationEnd}
           />
         </div>
-
-        {showHistoryPanel && (
-          <ChatHistory gameHistory={gameHistory} levelsMap={LEVELS} />
-        )}
       </div>
     </div>
   );

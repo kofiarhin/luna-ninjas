@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./home.styles.scss";
+import Leaderboard from "../../components/Leaderboard/Leaderboard";
 
 const Home = () => {
   const audioRef = useRef(null);
@@ -46,6 +47,8 @@ const Home = () => {
 
           <div className="landing-hint">Tip: headphones on 🔊</div>
         </div>
+
+        <Leaderboard />
       </main>
     </div>
   );

@@ -1,4 +1,4 @@
-export const BASE_URL = import.meta.DEV
+export const BASE_URL = import.meta.env.DEV
   ? "http://localhost:5000"
   : "https://luna-ninjas-api-8a3ad5856154.herokuapp.com";
 

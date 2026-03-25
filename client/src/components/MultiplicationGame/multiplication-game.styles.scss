@@ -395,6 +395,73 @@
   color: #d8ff3f;
 }
 
+/* table ready screen */
+
+.table-ready {
+  text-align: center;
+  padding: 0.75rem 0;
+
+  &__chosen {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #f9fafb;
+    margin: 0 0 0.25rem;
+
+    strong {
+      color: #d8ff3f;
+    }
+  }
+
+  &__pts {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+  }
+}
+
+/* score submission status */
+
+.score-submission {
+  margin-top: 8px;
+  text-align: center;
+
+  &__status {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0 0 6px;
+
+    &--success {
+      color: #63ebb1;
+    }
+  }
+
+  &__error {
+    font-size: 0.85rem;
+    color: #ff6b6b;
+    margin: 0 0 6px;
+
+    p {
+      margin: 0 0 6px;
+    }
+  }
+
+  &__retry {
+    padding: 5px 14px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-family: inherit;
+    transition: background 0.15s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+  }
+}
+
 /* placeholder before game starts */
 
 .options-placeholder {

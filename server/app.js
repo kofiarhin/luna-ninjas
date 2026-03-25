@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const questionRoutes = require("./routes/questionRoutres");
 const authRoutes = require("./routes/authRoutes");
+const scoreRoutes = require("./routes/scoreRoutes");
 
 const app = express();
 
@@ -15,5 +16,8 @@ app.get("/", async (req, res, next) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/questions", questionRoutes);
+
+// Score routes: POST /api/scores and GET /api/leaderboard
+app.use("/api", scoreRoutes);
 
 module.exports = app;
