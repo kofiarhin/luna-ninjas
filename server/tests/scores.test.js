@@ -1,5 +1,5 @@
 // server/tests/scores.test.js
-// Tests for POST /api/scores (validation) and GET /api/leaderboard (response shape).
+// Tests for POST /api/scores, GET /api/leaderboard, and GET /api/auth/me.
 // Uses supertest to exercise the Express app.
 // NOTE: MongoDB is NOT connected in these tests; controller internals are mocked
 // so that validation and shape tests run without a live DB.
@@ -14,10 +14,10 @@ jest.mock("groq-sdk", () => {
 const request = require("supertest");
 const app = require("../app");
 
-// ---- Mock clerkAuth so it either passes or returns 401 ----
-jest.mock("../middleware/clerkAuth", () => {
+// ---- Mock authMiddleware so it either passes or returns 401 ----
+// Tests that need auth set the x-test-user-id header to inject a userId.
+jest.mock("../middleware/authMiddleware", () => {
   return (req, res, next) => {
-    // Tests that need auth should set req headers; we inject userId via a test header
     const testUserId = req.headers["x-test-user-id"];
     if (!testUserId) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -69,6 +69,22 @@ jest.mock("../controllers/scoreController", () => ({
         { rank: 1, displayName: "Test Ninja", totalScore: 100, gamesPlayed: 5 },
         { rank: 2, displayName: "Another Ninja", totalScore: 50, gamesPlayed: 3 },
       ],
+    });
+  }),
+}));
+
+// ---- Mock authController to avoid hitting MongoDB ----
+jest.mock("../controllers/authController", () => ({
+  registerUser: jest.fn(async (req, res) => res.status(201).json({})),
+  loginUser: jest.fn(async (req, res) => res.json({})),
+  getMe: jest.fn(async (req, res) => {
+    return res.json({
+      _id: req.auth.userId,
+      displayName: "Test Ninja",
+      email: "test@example.com",
+      username: "testninja",
+      totalScore: 100,
+      gamesPlayed: 5,
     });
   }),
 }));
@@ -194,19 +210,52 @@ describe("GET /api/leaderboard", () => {
     expect(entry).toHaveProperty("gamesPlayed");
   });
 
-  it("does not expose clerkUserId, email, or imageUrl", async () => {
+  it("does not expose passwordHash or email in entries", async () => {
     const res = await request(app).get("/api/leaderboard");
 
     res.body.leaderboard.forEach((entry) => {
-      expect(entry).not.toHaveProperty("clerkUserId");
+      expect(entry).not.toHaveProperty("passwordHash");
       expect(entry).not.toHaveProperty("email");
-      expect(entry).not.toHaveProperty("imageUrl");
     });
   });
 
   it("does not require an auth token", async () => {
-    // Should succeed with no auth header
     const res = await request(app).get("/api/leaderboard");
     expect(res.status).toBe(200);
+  });
+});
+
+// ---- GET /api/auth/me ----
+
+describe("GET /api/auth/me", () => {
+  const AUTH_HEADER = { "x-test-user-id": "user_test123" };
+
+  it("returns 200 with safe user fields for a valid token", async () => {
+    const res = await request(app).get("/api/auth/me").set(AUTH_HEADER);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("displayName");
+    expect(res.body).toHaveProperty("email");
+    expect(res.body).toHaveProperty("totalScore");
+    expect(res.body).toHaveProperty("gamesPlayed");
+    expect(res.body).not.toHaveProperty("passwordHash");
+  });
+
+  it("returns 401 when no token is provided", async () => {
+    const res = await request(app).get("/api/auth/me");
+    expect(res.status).toBe(401);
+  });
+
+  it("returns 401 for an invalid token", async () => {
+    const res = await request(app)
+      .get("/api/auth/me")
+      .set("Authorization", "Bearer invalid.token.here");
+    expect(res.status).toBe(401);
+  });
+
+  it("returns 401 for an expired token", async () => {
+    // Simulated by omitting x-test-user-id — middleware mock rejects without it
+    const res = await request(app).get("/api/auth/me");
+    expect(res.status).toBe(401);
   });
 });

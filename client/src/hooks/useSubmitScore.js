@@ -1,8 +1,8 @@
 // client/src/hooks/useSubmitScore.js
-// Submits a completed round score to the backend with a Clerk JWT.
+// Submits a completed round score to the backend using the custom auth JWT.
 
 import { useState } from "react";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "../context/AuthContext";
 import { BASE_URL } from "../constants/constans";
 
 /**
@@ -12,7 +12,7 @@ import { BASE_URL } from "../constants/constans";
  *   error: string | null
  */
 const useSubmitScore = () => {
-  const { getToken } = useAuth();
+  const { token } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -21,8 +21,6 @@ const useSubmitScore = () => {
     setError(null);
 
     try {
-      const token = await getToken();
-
       const res = await fetch(`${BASE_URL}/api/scores`, {
         method: "POST",
         headers: {
@@ -39,9 +37,7 @@ const useSubmitScore = () => {
           throw new Error("Session expired — please log in again.");
         }
         if (res.status === 404) {
-          throw new Error(
-            "Account sync issue — please log out and back in."
-          );
+          throw new Error("Account not found — please log out and back in.");
         }
         throw new Error(data?.message || "Could not save score.");
       }

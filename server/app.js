@@ -20,4 +20,10 @@ app.use("/api/questions", questionRoutes);
 // Score routes: POST /api/scores and GET /api/leaderboard
 app.use("/api", scoreRoutes);
 
+// Global error handler — always return JSON, never HTML
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(err.status || 500).json({ error: err.message || "Internal server error" });
+});
+
 module.exports = app;

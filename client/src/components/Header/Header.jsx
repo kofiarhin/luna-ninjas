@@ -1,9 +1,17 @@
 // client/src/components/Header/Header.jsx
-import { NavLink } from "react-router-dom";
-import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import "./header.styles.scss";
 
 const Header = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/home");
+  };
+
   return (
     <header className="header">
       <div className="header-container">
@@ -21,47 +29,47 @@ const Header = () => {
             Home
           </NavLink>
 
-          <SignedIn>
-            <NavLink
-              to="/game"
-              className={({ isActive }) =>
-                `header-link ${isActive ? "is-active" : ""}`
-              }
-            >
-              Game
-            </NavLink>
+          {user && (
+            <>
+              <NavLink
+                to="/game"
+                className={({ isActive }) =>
+                  `header-link ${isActive ? "is-active" : ""}`
+                }
+              >
+                Game
+              </NavLink>
 
-            <div className="header-user">
-              <UserButton
-                afterSignOutUrl="/home"
-                appearance={{
-                  elements: {
-                    avatarBox: "header-avatar",
-                  },
-                }}
-              />
-            </div>
-          </SignedIn>
+              <div className="header-user">
+                <span className="header-display-name">{user.displayName}</span>
+                <button className="header-logout" onClick={handleLogout}>
+                  Logout
+                </button>
+              </div>
+            </>
+          )}
 
-          <SignedOut>
-            <NavLink
-              to="/login"
-              className={({ isActive }) =>
-                `header-link ${isActive ? "is-active" : ""}`
-              }
-            >
-              Login
-            </NavLink>
+          {!user && (
+            <>
+              <NavLink
+                to="/login"
+                className={({ isActive }) =>
+                  `header-link ${isActive ? "is-active" : ""}`
+                }
+              >
+                Login
+              </NavLink>
 
-            <NavLink
-              to="/register"
-              className={({ isActive }) =>
-                `header-link ${isActive ? "is-active" : ""}`
-              }
-            >
-              Register
-            </NavLink>
-          </SignedOut>
+              <NavLink
+                to="/register"
+                className={({ isActive }) =>
+                  `header-link ${isActive ? "is-active" : ""}`
+                }
+              >
+                Register
+              </NavLink>
+            </>
+          )}
         </nav>
       </div>
     </header>

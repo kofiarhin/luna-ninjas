@@ -4,13 +4,13 @@
 //   GET  /api/leaderboard — public leaderboard
 
 const { Router } = require("express");
-const clerkAuth = require("../middleware/clerkAuth");
+const authMiddleware = require("../middleware/authMiddleware");
 const { submitScore, getLeaderboard } = require("../controllers/scoreController");
 
 const router = Router();
 
-// POST /api/scores — requires valid Clerk JWT
-router.post("/scores", clerkAuth, submitScore);
+// POST /api/scores — requires valid JWT
+router.post("/scores", authMiddleware, submitScore);
 
 // GET /api/leaderboard — public, no auth
 router.get("/leaderboard", getLeaderboard);

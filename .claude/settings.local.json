@@ -7,7 +7,9 @@
       "Bash(npx jest:*)",
       "Bash(npx vitest:*)",
       "Bash(find /c/Users/laura.bolas -path *client/src* -name *[Ss]idebar* -o -path *client/src* -name *[Nn]av*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(find '/c/Users/laura.bolas/OneDrive - Roundel Kitchens/Desktop/workspace/dev/luna-ninjas' -name .env* -type f)",
+      "Bash(npm install:*)"
     ]
   }
 }

@@ -4,12 +4,13 @@ const { WEIGHT_MAP } = require("../constants/scoring");
 
 /**
  * POST /api/scores
- * Authenticated. Verifies JWT (via clerkAuth middleware), recomputes round score
- * server-side, and atomically increments the user's totalScore and gamesPlayed.
+ * Authenticated. Recomputes round score server-side and atomically increments
+ * the user's totalScore and gamesPlayed. Returns 404 if the user record does
+ * not exist — no auto-creation fallback.
  */
 const submitScore = async (req, res, next) => {
   try {
-    const userId = req.auth.userId; // set by clerkAuth middleware — never from body
+    const userId = req.auth.userId; // set by authMiddleware — never from body
     const { table, correctCount } = req.body;
 
     // --- Validation ---
@@ -34,19 +35,16 @@ const submitScore = async (req, res, next) => {
     // --- Recompute score server-side (never trust client-supplied roundScore) ---
     const roundScore = WEIGHT_MAP[tableInt] * correctCountInt;
 
-    // --- Find user by verified clerkUserId, or create if missing ---
-    const user = await User.findOneAndUpdate(
-      { clerkUserId: userId },
-      {
-        $inc: { totalScore: roundScore, gamesPlayed: 1 },
-        $setOnInsert: {
-          clerkUserId: userId,
-          email: "",
-          displayName: "Anonymous Ninja",
-        },
-      },
-      { new: true, upsert: true }
+    // --- Find user by MongoDB _id and increment counters ---
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $inc: { totalScore: roundScore, gamesPlayed: 1 } },
+      { new: true }
     );
+
+    if (!user) {
+      return res.status(404).json({ error: "user_not_found" });
+    }
 
     return res.json({
       roundScore,
@@ -62,7 +60,7 @@ const submitScore = async (req, res, next) => {
  * GET /api/leaderboard
  * Public — no auth required.
  * Returns the top 20 users by totalScore descending.
- * Never returns clerkUserId, email, or imageUrl.
+ * Never returns passwordHash, email, or internal IDs.
  */
 const getLeaderboard = async (req, res, next) => {
   try {
