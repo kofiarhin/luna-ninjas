@@ -1,4 +1,3 @@
-// client/src/components/Header/Header.jsx
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import "./header.styles.scss";
@@ -57,16 +56,11 @@ const Header = () => {
                   `header-link ${isActive ? "is-active" : ""}`
                 }
               >
-                Login
+                Sign in
               </NavLink>
 
-              <NavLink
-                to="/register"
-                className={({ isActive }) =>
-                  `header-link ${isActive ? "is-active" : ""}`
-                }
-              >
-                Register
+              <NavLink to="/register" className="header-cta">
+                Get started
               </NavLink>
             </>
           )}

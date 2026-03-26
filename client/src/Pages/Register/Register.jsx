@@ -1,8 +1,8 @@
-// client/src/Pages/Register/Register.jsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { BASE_URL } from "../../constants/constans";
+import AuthLayout from "../../components/AuthLayout/AuthLayout";
 
 const Register = () => {
   const { login } = useAuth();
@@ -19,6 +19,9 @@ const Register = () => {
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    if (fieldErrors[e.target.name]) {
+      setFieldErrors((prev) => ({ ...prev, [e.target.name]: null }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -62,81 +65,116 @@ const Register = () => {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-container">
-        <h2>Register</h2>
-        <form onSubmit={handleSubmit}>
-          {apiError && <p className="auth-error">{apiError}</p>}
-
-          <div className="auth-field">
-            <label htmlFor="fullName">Full Name</label>
-            <input
-              id="fullName"
-              type="text"
-              name="fullName"
-              value={form.fullName}
-              onChange={handleChange}
-              required
-            />
-            {fieldErrors.fullName && (
-              <span className="auth-field-error">{fieldErrors.fullName}</span>
-            )}
+    <AuthLayout
+      title="Create your account"
+      subtitle="Start playing and climb the leaderboard"
+    >
+      <form className="auth-form" onSubmit={handleSubmit} noValidate>
+        {apiError && (
+          <div className="auth-form__error" role="alert">
+            {apiError}
           </div>
+        )}
 
-          <div className="auth-field">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              required
-            />
-            {fieldErrors.email && (
-              <span className="auth-field-error">{fieldErrors.email}</span>
-            )}
-          </div>
+        <div className="auth-field">
+          <label className="auth-field__label" htmlFor="reg-fullName">
+            Full name
+          </label>
+          <input
+            className={`auth-field__input${fieldErrors.fullName ? " has-error" : ""}`}
+            id="reg-fullName"
+            type="text"
+            name="fullName"
+            value={form.fullName}
+            onChange={handleChange}
+            placeholder="Jane Doe"
+            autoComplete="name"
+            required
+          />
+          {fieldErrors.fullName && (
+            <span className="auth-field__error">{fieldErrors.fullName}</span>
+          )}
+        </div>
 
-          <div className="auth-field">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              required
-            />
-            {fieldErrors.password && (
-              <span className="auth-field-error">{fieldErrors.password}</span>
-            )}
-          </div>
+        <div className="auth-field">
+          <label className="auth-field__label" htmlFor="reg-email">
+            Email address
+          </label>
+          <input
+            className={`auth-field__input${fieldErrors.email ? " has-error" : ""}`}
+            id="reg-email"
+            type="email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            placeholder="you@example.com"
+            autoComplete="email"
+            required
+          />
+          {fieldErrors.email && (
+            <span className="auth-field__error">{fieldErrors.email}</span>
+          )}
+        </div>
 
-          <div className="auth-field">
-            <label htmlFor="username">Username (optional)</label>
-            <input
-              id="username"
-              type="text"
-              name="username"
-              value={form.username}
-              onChange={handleChange}
-            />
-            {fieldErrors.username && (
-              <span className="auth-field-error">{fieldErrors.username}</span>
-            )}
-          </div>
+        <div className="auth-field">
+          <label className="auth-field__label" htmlFor="reg-password">
+            Password
+          </label>
+          <input
+            className={`auth-field__input${fieldErrors.password ? " has-error" : ""}`}
+            id="reg-password"
+            type="password"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            placeholder="At least 8 characters"
+            autoComplete="new-password"
+            required
+          />
+          {fieldErrors.password && (
+            <span className="auth-field__error">{fieldErrors.password}</span>
+          )}
+        </div>
 
-          <button type="submit" disabled={loading}>
-            {loading ? "Creating account…" : "Register"}
-          </button>
+        <div className="auth-field">
+          <label className="auth-field__label" htmlFor="reg-username">
+            Username
+            <span className="auth-field__hint" style={{ marginLeft: 6 }}>
+              (optional)
+            </span>
+          </label>
+          <input
+            className={`auth-field__input${fieldErrors.username ? " has-error" : ""}`}
+            id="reg-username"
+            type="text"
+            name="username"
+            value={form.username}
+            onChange={handleChange}
+            placeholder="ninja42"
+            autoComplete="username"
+          />
+          {fieldErrors.username && (
+            <span className="auth-field__error">{fieldErrors.username}</span>
+          )}
+        </div>
 
-          <p>
-            Already have an account? <Link to="/login">Login</Link>
-          </p>
-        </form>
-      </div>
-    </div>
+        <button
+          className="auth-btn auth-btn--primary"
+          type="submit"
+          disabled={loading}
+        >
+          {loading && <span className="auth-btn__spinner" />}
+          {loading ? "Creating account\u2026" : "Create account"}
+        </button>
+      </form>
+
+      <p className="auth-footer">
+        Already have an account?{" "}
+        <Link className="auth-footer__link" to="/login">
+          Sign in
+        </Link>
+      </p>
+    </AuthLayout>
   );
 };
 
