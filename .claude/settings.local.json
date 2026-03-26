@@ -1,15 +1,6 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(find '/c/Users/laura.bolas/OneDrive - Roundel Kitchens/Desktop/workspace/dev/pregchat/client/src' -name *.test.jsx -o -name *.test.js)",
-      "Bash(npx vite:*)",
-      "Bash(find '/c/Users/laura.bolas/OneDrive - Roundel Kitchens/Desktop/workspace/dev/pregchat' -path */node_modules -prune -o -name *.jsx -newer '/c/Users/laura.bolas/OneDrive - Roundel Kitchens/Desktop/workspace/dev/pregchat/CLAUDE.md' -print -o -name *.js -newer '/c/Users/laura.bolas/OneDrive - Roundel Kitchens/Desktop/workspace/dev/pregchat/CLAUDE.md' -print -o -name *.scss -newer '/c/Users/laura.bolas/OneDrive - Roundel Kitchens/Desktop/workspace/dev/pregchat/CLAUDE.md' -print)",
-      "Bash(npx jest:*)",
-      "Bash(npx vitest:*)",
-      "Bash(find /c/Users/laura.bolas -path *client/src* -name *[Ss]idebar* -o -path *client/src* -name *[Nn]av*)",
-      "Bash(npm run:*)",
-      "Bash(find '/c/Users/laura.bolas/OneDrive - Roundel Kitchens/Desktop/workspace/dev/luna-ninjas' -name .env* -type f)",
-      "Bash(npm install:*)"
-    ]
+    "defaultMode": "bypassPermissions",
+    "allow": ["Bash(*)", "Read", "Edit", "Write", "Glob", "Grep"]
   }
 }
