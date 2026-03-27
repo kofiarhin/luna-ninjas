@@ -7,6 +7,7 @@ import Home from "./Pages/Home/Home";
 import Game from "./Pages/Game/Game";
 import Login from "./Pages/Login/Login";
 import Register from "./Pages/Register/Register";
+import Profile from "./Pages/Profile/Profile";
 
 const PrivateRoute = ({ children }) => {
   const { user, isLoaded } = useAuth();
@@ -29,6 +30,15 @@ const App = () => {
           element={
             <PrivateRoute>
               <Game />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <Profile />
             </PrivateRoute>
           }
         />

@@ -8,10 +8,11 @@ const userSchema = new mongoose.Schema(
     passwordHash: { type: String, required: true, select: false },
     username: { type: String, default: undefined },
     displayName: { type: String, default: "" },
+    profileImage: { type: String, default: "" },
     totalScore: { type: Number, default: 0 },
     gamesPlayed: { type: Number, default: 0 },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 userSchema.index({ totalScore: -1 });

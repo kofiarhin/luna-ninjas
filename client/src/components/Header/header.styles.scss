@@ -52,7 +52,9 @@ $accent-hover: #c2f040;
   text-decoration: none;
   padding: 7px 12px;
   border-radius: 8px;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
   font-size: 0.875rem;
   font-weight: 500;
   line-height: 1;
@@ -86,7 +88,10 @@ $accent-hover: #c2f040;
   font-size: 0.8125rem;
   font-weight: 600;
   line-height: 1;
-  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
   box-shadow: 0 0 8px rgba(212, 255, 95, 0.15);
 
   &:hover {
@@ -119,6 +124,20 @@ $accent-hover: #c2f040;
   font-size: 0.8125rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #ffffff;
+  }
+}
+
+.header-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .header-logout {
@@ -131,7 +150,10 @@ $accent-hover: #c2f040;
   font-family: inherit;
   padding: 5px 12px;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
 
   &:hover {
     background: rgba(255, 255, 255, 0.06);

@@ -40,7 +40,16 @@ const Header = () => {
               </NavLink>
 
               <div className="header-user">
-                <span className="header-display-name">{user.displayName}</span>
+                {user.profileImage && (
+                  <img
+                    src={user.profileImage}
+                    alt="Profile"
+                    className="header-avatar"
+                  />
+                )}
+                <NavLink to="/profile" className="header-display-name">
+                  {user.displayName}
+                </NavLink>
                 <button className="header-logout" onClick={handleLogout}>
                   Logout
                 </button>

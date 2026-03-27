@@ -12,6 +12,8 @@ const safeUser = (user) => ({
   displayName: user.displayName,
   email: user.email,
   username: user.username,
+  fullName: user.fullName,
+  profileImage: user.profileImage,
 });
 
 /**
@@ -24,10 +26,12 @@ const registerUser = async (req, res, next) => {
 
     // Validate required fields
     const errors = {};
-    if (!fullName || !fullName.trim()) errors.fullName = "Full name is required";
+    if (!fullName || !fullName.trim())
+      errors.fullName = "Full name is required";
     if (!email || !email.trim()) errors.email = "Email is required";
     if (!password) errors.password = "Password is required";
-    else if (password.length < 8) errors.password = "Password must be at least 8 characters";
+    else if (password.length < 8)
+      errors.password = "Password must be at least 8 characters";
 
     if (Object.keys(errors).length > 0) {
       return res.status(400).json({ errors });
@@ -117,7 +121,7 @@ const loginUser = async (req, res, next) => {
 const getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.auth.userId).select(
-      "_id displayName email username totalScore gamesPlayed"
+      "_id displayName email username totalScore gamesPlayed fullName profileImage",
     );
     if (!user) return res.status(404).json({ error: "user_not_found" });
     return res.json(user);
@@ -126,4 +130,59 @@ const getMe = async (req, res, next) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getMe };
+/**
+ * PATCH /api/auth/profile
+ * Protected (authMiddleware). Updates the current authenticated user's profile.
+ */
+const updateProfile = async (req, res, next) => {
+  try {
+    const userId = req.auth.userId;
+    const { fullName, username, displayName, profileImage } = req.body;
+
+    // Validate
+    const errors = {};
+    if (fullName !== undefined && (!fullName || !fullName.trim())) {
+      errors.fullName = "Full name is required";
+    }
+    if (username !== undefined && username !== "") {
+      if (!/^[a-z0-9_]{3,30}$/.test(username.trim())) {
+        errors.username =
+          "Username must be 3–30 characters: letters, numbers, and underscores only";
+      }
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ errors });
+    }
+
+    // Prepare update object
+    const update = {};
+    if (fullName !== undefined) update.fullName = fullName.trim();
+    if (displayName !== undefined) update.displayName = displayName.trim();
+    if (profileImage !== undefined) update.profileImage = profileImage;
+    if (username !== undefined) {
+      update.username =
+        username && username.trim() ? username.trim().toLowerCase() : undefined;
+    }
+
+    // Check username uniqueness if changing
+    if (update.username !== undefined) {
+      const existing = await User.findOne({
+        username: update.username,
+        _id: { $ne: userId },
+      });
+      if (existing) {
+        return res.status(409).json({ error: "username_taken" });
+      }
+    }
+
+    const user = await User.findByIdAndUpdate(userId, update, { new: true });
+    if (!user) return res.status(404).json({ error: "user_not_found" });
+
+    return res.json(safeUser(user));
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { registerUser, loginUser, getMe, updateProfile };
