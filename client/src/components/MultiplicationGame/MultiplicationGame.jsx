@@ -1,5 +1,6 @@
 // MultiplicationGame.jsx
 import React, { useEffect, useState, useRef } from "react";
+import { Link } from "react-router-dom";
 import "./multiplication-game.styles.scss";
 
 import GameHeader from "../GameHeader/GameHeader";
@@ -11,26 +12,21 @@ import WatermelonAnimation from "../WatermelonAnimation/WatermelonAnimation";
 import { generateRound } from "../../utils/questionGenerator";
 import { getPointsPerCorrect } from "../../utils/scoring";
 import useSubmitScore from "../../hooks/useSubmitScore";
+import { useAuth } from "../../context/AuthContext";
 
 const QUESTIONS_PER_GAME = 12;
 const INITIAL_LIVES = 5;
 const STREAK_FOR_EXTRA_LIFE = 5;
-const TIME_PER_QUESTION = 8; // fixed 8-second timer
+const TIME_PER_QUESTION = 8;
 
-// Minimal level descriptor for GameHeader (which expects displayLevel.label)
-const DISPLAY_LEVEL = { label: "" };
-
-/**
- * Props:
- *   table      {number}   - The selected times table (2–12)
- *   onPlayAgain {Function} - Called when user clicks Play Again (returns to table selection)
- */
 const MultiplicationGame = ({ table, onPlayAgain }) => {
+  const { user } = useAuth();
+
   // sounds
   const correctSoundRef = useRef(null);
   const wrongSoundRef = useRef(null);
 
-  // questions for this round (generated fresh on game start)
+  // questions for this round
   const [questions, setQuestions] = useState([]);
 
   // game state
@@ -69,7 +65,6 @@ const MultiplicationGame = ({ table, onPlayAgain }) => {
   const { submit, loading: submitLoading, error: submitError } = useSubmitScore();
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
-  // Hold round data for retry
   const pendingScoreRef = useRef(null);
 
   // sounds preload
@@ -90,7 +85,7 @@ const MultiplicationGame = ({ table, onPlayAgain }) => {
   };
 
   // ---------- question display helpers ----------
-  const showQuestion = (questionsArr, index, levelKey) => {
+  const showQuestion = (questionsArr, index) => {
     if (index >= questionsArr.length) return;
 
     const q = questionsArr[index];
@@ -153,7 +148,9 @@ const MultiplicationGame = ({ table, onPlayAgain }) => {
     };
 
     setLastGameSummary(summary);
-    submitScore(correctCount);
+    if (user) {
+      submitScore(correctCount);
+    }
   };
 
   const proceedAfterQuestion = (
@@ -165,7 +162,7 @@ const MultiplicationGame = ({ table, onPlayAgain }) => {
     if (nextLives <= 0 || nextQuestionIndex >= QUESTIONS_PER_GAME) {
       finishGame(nextQuestionIndex, nextLives, nextScore, updatedLog);
     } else {
-      showQuestion(questions, nextQuestionIndex, null);
+      showQuestion(questions, nextQuestionIndex);
       setQuestionIndex(nextQuestionIndex);
     }
   };
@@ -191,7 +188,6 @@ const MultiplicationGame = ({ table, onPlayAgain }) => {
     setSubmitSuccess(false);
     pendingScoreRef.current = null;
 
-    // Show first question from freshly generated set
     const q = freshQuestions[0];
     setQuestion({
       id: `${q.a}-${q.b}-0`,
@@ -353,7 +349,6 @@ const MultiplicationGame = ({ table, onPlayAgain }) => {
   };
 
   const handlePlayAgain = () => {
-    // Return to table selection in Game.jsx
     if (onPlayAgain) onPlayAgain();
   };
 
@@ -361,114 +356,115 @@ const MultiplicationGame = ({ table, onPlayAgain }) => {
 
   // ---------- UI ----------
   return (
-    <div className={`game-page ${bgFlash ? "game-page-miss" : ""}`}>
-      <div className={`game-shell ${gameActive ? "game-shell-centered" : ""}`}>
-        <div className="game-card">
+    <div className={`mg${bgFlash ? " mg--flash" : ""}`}>
+      <div className="mg__shell">
+        <div className="mg__card">
           <GameHeader
             gameActive={gameActive}
             timeLeft={timeLeft}
-            displayLevel={DISPLAY_LEVEL}
             isInitialState={isInitialState}
             score={score}
             lives={lives}
             streak={streak}
+            questionIndex={questionIndex}
+            totalQuestions={QUESTIONS_PER_GAME}
           />
 
+          {/* Pre-game: table info + start */}
           {isInitialState && (
-            <div className="level-select">
-              <div className="table-ready">
-                <p className="table-ready__chosen">
-                  You chose: <strong>&times;{table}</strong>
-                </p>
-                <p className="table-ready__pts">
-                  {getPointsPerCorrect(table)} pts per correct answer
-                </p>
-              </div>
+            <div className="mg__ready">
+              <div className="mg__ready-table">&times;{table}</div>
+              <p className="mg__ready-pts">
+                {getPointsPerCorrect(table)} pts per correct answer
+              </p>
+              <p className="mg__ready-info">
+                {QUESTIONS_PER_GAME} questions &middot; {TIME_PER_QUESTION}s each &middot; {INITIAL_LIVES} lives
+              </p>
+              <button className="mg__btn mg__btn--start" onClick={handleStartGame}>
+                Start Game
+              </button>
             </div>
           )}
 
+          {/* Active game */}
           {gameActive && (
-            <QuestionDisplay
-              question={question}
-              hasAnswered={hasAnswered}
-              questionKey={questionKey}
-            />
-          )}
+            <div className="mg__play">
+              <QuestionDisplay
+                question={question}
+                hasAnswered={hasAnswered}
+                questionKey={questionKey}
+              />
 
-          {gameActive ? (
-            <AnswerOptions
-              options={options}
-              feedback={feedback}
-              question={question}
-              hasAnswered={hasAnswered}
-              handleAnswer={handleAnswer}
-              questionKey={questionKey}
-            />
-          ) : (
-            !gameOver && (
-              <div className="options-placeholder">
-                Click Start Game to begin!
-              </div>
-            )
-          )}
+              <AnswerOptions
+                options={options}
+                feedback={feedback}
+                question={question}
+                hasAnswered={hasAnswered}
+                handleAnswer={handleAnswer}
+                questionKey={questionKey}
+              />
 
-          {feedback && (
-            <div className={`feedback-text feedback-${feedback}`}>
-              {feedback === "correct"
-                ? "Correct!"
-                : feedback === "wrong"
-                ? "Oops! Wrong answer"
-                : feedback === "timeout"
-                ? "Time's up!"
-                : ""}
-            </div>
-          )}
-
-          {!gameOver && (
-            <div className="game-controls-row">
-              {isInitialState && (
-                <button
-                  className="start-button"
-                  onClick={handleStartGame}
-                >
-                  Start Game
-                </button>
+              {feedback && (
+                <div className={`mg__feedback mg__feedback--${feedback}`}>
+                  {feedback === "correct"
+                    ? "Correct!"
+                    : feedback === "wrong"
+                    ? "Wrong answer"
+                    : feedback === "timeout"
+                    ? "Time's up!"
+                    : ""}
+                </div>
               )}
             </div>
           )}
 
+          {/* Game over */}
           {gameOver && (
-            <>
+            <div className="mg__over">
               <GameSummary summary={lastGameSummary} />
 
-              <div className="score-submission">
-                {submitAttempted && submitLoading && (
-                  <p className="score-submission__status">Saving score...</p>
-                )}
-                {submitAttempted && !submitLoading && submitSuccess && (
-                  <p className="score-submission__status score-submission__status--success">
-                    Score saved!
+              {user ? (
+                <div className="mg__submit">
+                  {submitAttempted && submitLoading && (
+                    <p className="mg__submit-status">Saving score...</p>
+                  )}
+                  {submitAttempted && !submitLoading && submitSuccess && (
+                    <p className="mg__submit-status mg__submit-status--ok">
+                      Score saved!
+                    </p>
+                  )}
+                  {submitAttempted && !submitLoading && submitError && (
+                    <div className="mg__submit-err">
+                      <p>Could not save score — {submitError}</p>
+                      <button className="mg__submit-retry" onClick={handleRetrySubmit}>
+                        Retry
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="mg__guest">
+                  <p className="mg__guest-title">Want to save your scores?</p>
+                  <p className="mg__guest-text">
+                    Sign in to track your progress and compete on the leaderboard
                   </p>
-                )}
-                {submitAttempted && !submitLoading && submitError && (
-                  <div className="score-submission__error">
-                    <p>Could not save score — {submitError}</p>
-                    <button
-                      className="score-submission__retry"
-                      onClick={handleRetrySubmit}
-                    >
-                      Retry
-                    </button>
+                  <div className="mg__guest-actions">
+                    <Link to="/login" className="mg__btn mg__btn--primary">
+                      Sign in
+                    </Link>
+                    <Link to="/register" className="mg__btn mg__btn--ghost">
+                      Create account
+                    </Link>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
-              <div className="game-controls-row">
-                <button className="start-button" onClick={handlePlayAgain}>
+              <div className="mg__actions">
+                <button className="mg__btn mg__btn--start" onClick={handlePlayAgain}>
                   Play Again
                 </button>
               </div>
-            </>
+            </div>
           )}
 
           <WatermelonAnimation

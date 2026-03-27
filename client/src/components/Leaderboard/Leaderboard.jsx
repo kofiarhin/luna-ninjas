@@ -53,7 +53,7 @@ const Leaderboard = () => {
                     : `${entry.rank}th`}
                 </td>
                 <td className="leaderboard__td leaderboard__td--name">
-                  {entry.displayName}
+                  {entry.name}
                 </td>
                 <td className="leaderboard__td leaderboard__td--score">
                   {entry.totalScore}

@@ -1,4 +1,3 @@
-// client/src/Pages/Game/Game.jsx
 import React, { useState } from "react";
 import TableSelector from "../../components/TableSelector/TableSelector";
 import MultiplicationGame from "../../components/MultiplicationGame/MultiplicationGame";
@@ -15,7 +14,7 @@ const Game = () => {
   };
 
   return (
-    <div>
+    <main className="game-page-wrapper">
       {selectedTable === null ? (
         <TableSelector onSelect={handleSelect} selectedTable={selectedTable} />
       ) : (
@@ -24,7 +23,7 @@ const Game = () => {
           onPlayAgain={handlePlayAgain}
         />
       )}
-    </div>
+    </main>
   );
 };
 

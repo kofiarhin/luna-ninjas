@@ -1,53 +1,65 @@
-// GameHeader.jsx
 import React from "react";
 
 const GameHeader = ({
   gameActive,
   timeLeft,
-  displayLevel,
   isInitialState,
   score,
   lives,
   streak,
+  questionIndex,
+  totalQuestions,
 }) => {
+  const progress =
+    gameActive && totalQuestions > 0
+      ? ((questionIndex) / totalQuestions) * 100
+      : 0;
+
   return (
-    <div className="game-header">
-      <div className="game-header-left">
-        <h1 className="game-title">
-          times<span>ninja</span>
-        </h1>
-        <div className="game-subtitle">Train your mind</div>
-      </div>
-
-      <div className="game-header-right">
-        {gameActive && (
-          <div className={`game-timer ${timeLeft <= 3 ? "timer-low" : ""}`}>
-            <span className="timer-label">time</span>
-            <span className="timer-value">{timeLeft}s</span>
-          </div>
-        )}
-
-        <div className="game-meta">
-          <div className="game-subtitle">{displayLevel.label}</div>
-
+    <div className="gh">
+      {/* Top row: stats left, timer right */}
+      <div className="gh__top">
+        <div className="gh__stats">
           {!isInitialState && (
-            <div className="game-stats">
-              <div className="stat-pill">
-                <span className="stat-label">score</span>
-                <span className="stat-value">{score}</span>
+            <>
+              <div className="gh__stat">
+                <span className="gh__stat-val">{score}</span>
+                <span className="gh__stat-lbl">Score</span>
               </div>
-              <div className="stat-pill">
-                <span className="stat-label">lives</span>
-                <span className="stat-value">{lives}</span>
+              <div className="gh__stat">
+                <span className="gh__stat-val">{lives}</span>
+                <span className="gh__stat-lbl">Lives</span>
               </div>
-              <div className="stat-pill">
-                <span className="stat-label">streak</span>
-                <span className="stat-value">{streak}</span>
+              <div className="gh__stat">
+                <span className="gh__stat-val">{streak}</span>
+                <span className="gh__stat-lbl">Streak</span>
               </div>
-            </div>
+            </>
           )}
         </div>
+
+        {gameActive && (
+          <div className={`gh__timer${timeLeft <= 3 ? " gh__timer--low" : ""}`}>
+            <span className="gh__timer-val">{timeLeft}</span>
+            <span className="gh__timer-lbl">sec</span>
+          </div>
+        )}
       </div>
+
+      {/* Progress bar */}
+      {gameActive && (
+        <div className="gh__progress">
+          <div className="gh__progress-track">
+            <div
+              className="gh__progress-fill"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <span className="gh__progress-text">
+            {questionIndex} / {totalQuestions}
+          </span>
+        </div>
+      )}
     </div>
   );
 };

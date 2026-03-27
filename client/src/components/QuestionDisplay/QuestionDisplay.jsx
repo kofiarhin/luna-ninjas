@@ -1,17 +1,13 @@
-// QuestionDisplay.jsx
 import React from "react";
 
 const QuestionDisplay = ({ question, hasAnswered, questionKey }) => {
   return (
-    <div className="question-block">
-      <div
-        className={`question-text ${hasAnswered ? "question-text-muted" : ""}`}
-        key={questionKey}
-      >
+    <div className="question-block" key={questionKey}>
+      <p className={`question-text${hasAnswered ? " question-text--muted" : ""}`}>
         {question.questionText
           ? question.questionText
           : `${question.a} × ${question.b} = ?`}
-      </div>
+      </p>
     </div>
   );
 };
