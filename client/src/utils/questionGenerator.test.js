@@ -1,137 +1,28 @@
 // client/src/utils/questionGenerator.test.js
-// Tests for the generateRound() question generation logic.
-// Written as self-contained CJS to run under the root Jest config (no ESM transform).
+// Tests for questionGenerator.js using the real exported module source.
+// Root Jest config is CJS/no-transform, so this loads the source and evaluates it.
 
 "use strict";
 
-// ---- Inline the core logic under test ----
-// (Mirrors questionGenerator.js exactly so the algorithm is actually tested)
+const fs = require("fs");
+const path = require("path");
+const vm = require("vm");
 
-const fisherYates = (arr) => {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
+const modulePath = path.resolve(__dirname, "./questionGenerator.js");
+const source = fs.readFileSync(modulePath, "utf8");
+const compiled = `${source.replace(/export const /g, "const ")}
+module.exports = { generateRound, generateDivisionRound, buildQuestionsFromFacts };`;
+
+const sandbox = {
+  module: { exports: {} },
+  exports: {},
+  Math,
+  Set,
 };
 
-const generateWrongAnswers = (table, b, correctAnswer) => {
-  const rawCandidates = [
-    correctAnswer - 1,
-    correctAnswer + 1,
-    correctAnswer - 2,
-    correctAnswer + 2,
-    correctAnswer - table,
-    correctAnswer + table,
-    table * (b - 1),
-    table * (b + 1),
-  ];
+vm.runInNewContext(compiled, sandbox, { filename: "questionGenerator.js" });
 
-  const seen = new Set([correctAnswer]);
-  const candidates = rawCandidates.filter((n) => {
-    if (n <= 0) return false;
-    if (seen.has(n)) return false;
-    seen.add(n);
-    return true;
-  });
-
-  const minVal = table;
-  const maxVal = table * 12;
-
-  let attempts = 0;
-  while (candidates.length < 3 && attempts < 200) {
-    attempts++;
-    const rand = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
-    if (!seen.has(rand)) {
-      seen.add(rand);
-      candidates.push(rand);
-    }
-  }
-
-  return candidates.slice(0, 3);
-};
-
-const generateRound = (table) => {
-  const multipliers = fisherYates([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-
-  return multipliers.map((b) => {
-    const correctAnswer = table * b;
-    const wrongAnswers = generateWrongAnswers(table, b, correctAnswer);
-    const options = fisherYates([correctAnswer, ...wrongAnswers]);
-
-    return {
-      a: table,
-      b,
-      correctAnswer,
-      options,
-      questionText: `What is ${table} × ${b}?`,
-    };
-  });
-};
-
-const generateDivisionWrongAnswers = (correctAnswer) => {
-  const rawCandidates = [
-    correctAnswer - 1,
-    correctAnswer + 1,
-    correctAnswer - 2,
-    correctAnswer + 2,
-    correctAnswer - 3,
-    correctAnswer + 3,
-  ];
-
-  const seen = new Set([correctAnswer]);
-  const candidates = rawCandidates.filter((n) => {
-    if (n <= 0) return false;
-    if (seen.has(n)) return false;
-    seen.add(n);
-    return true;
-  });
-
-  let attempts = 0;
-  while (candidates.length < 3 && attempts < 200) {
-    attempts++;
-    const rand = Math.floor(Math.random() * 12) + 1;
-    if (!seen.has(rand)) {
-      seen.add(rand);
-      candidates.push(rand);
-    }
-  }
-
-  return candidates.slice(0, 3);
-};
-
-const buildQuestionsFromFacts = (facts, operation = "multiplication") => {
-  const isDivision = operation === "division";
-  return facts.map((fact) => {
-    const a = Number(fact.a);
-    const b = Number(fact.b);
-
-    if (isDivision) {
-      const dividend = a * b;
-      const correctAnswer = b;
-      const wrongAnswers = generateDivisionWrongAnswers(correctAnswer);
-      const options = fisherYates([correctAnswer, ...wrongAnswers]);
-      return {
-        a,
-        b,
-        correctAnswer,
-        options,
-        questionText: `What is ${dividend} ÷ ${a}?`,
-      };
-    }
-
-    const correctAnswer = a * b;
-    const wrongAnswers = generateWrongAnswers(a, b, correctAnswer);
-    const options = fisherYates([correctAnswer, ...wrongAnswers]);
-    return {
-      a,
-      b,
-      correctAnswer,
-      options,
-      questionText: `What is ${a} × ${b}?`,
-    };
-  });
-};
+const { generateRound, buildQuestionsFromFacts } = sandbox.module.exports;
 
 // ---- Tests ----
 

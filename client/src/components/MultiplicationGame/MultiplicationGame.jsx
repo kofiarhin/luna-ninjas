@@ -171,6 +171,7 @@ const MultiplicationGame = ({
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [smartLowData, setSmartLowData] = useState(false);
+  const [smartInitError, setSmartInitError] = useState(null);
   const pendingScoreRef = useRef(null);
 
   // sounds preload
@@ -281,16 +282,23 @@ const MultiplicationGame = ({
     let freshQuestions = [];
     let lowData = false;
 
-    if (isSmart) {
-      const plan = await fetchSmartRound({ operation, table });
-      const selectedFacts = composeSmartFacts(plan.facts || [], !!plan.lowData);
-      freshQuestions = buildQuestionsFromFacts(selectedFacts, operation);
-      freshQuestions = shuffle(freshQuestions);
-      lowData = !!plan.lowData;
-    } else {
-      freshQuestions = isDivision
-        ? generateDivisionRound(table)
-        : generateRound(table);
+    try {
+      setSmartInitError(null);
+
+      if (isSmart) {
+        const plan = await fetchSmartRound({ operation, table });
+        const selectedFacts = composeSmartFacts(plan.facts || [], !!plan.lowData);
+        freshQuestions = buildQuestionsFromFacts(selectedFacts, operation);
+        freshQuestions = shuffle(freshQuestions);
+        lowData = !!plan.lowData;
+      } else {
+        freshQuestions = isDivision
+          ? generateDivisionRound(table)
+          : generateRound(table);
+      }
+    } catch (err) {
+      setSmartInitError(err?.message || "Could not load Smart Practice round.");
+      return;
     }
 
     if (!freshQuestions.length) return;
@@ -544,8 +552,27 @@ const MultiplicationGame = ({
                   >
                     {smartRoundLoading ? "Preparing Smart Round..." : "Start Game"}
                   </button>
-                  {isSmart && smartRoundError && (
-                    <p className="mg__submit-status">{smartRoundError}</p>
+                  {isSmart && (smartInitError || smartRoundError) && (
+                    <div className="mg__submit">
+                      <p className="mg__submit-status">
+                        {smartInitError || smartRoundError}
+                      </p>
+                      <div className="mg__guest-actions">
+                        <button
+                          className="mg__btn mg__btn--start"
+                          onClick={handleStartGame}
+                          disabled={smartRoundLoading}
+                        >
+                          Retry
+                        </button>
+                        <button
+                          className="mg__btn mg__btn--ghost"
+                          onClick={() => onModeChange && onModeChange("standard")}
+                        >
+                          Switch to Standard
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </>
               )}
@@ -555,6 +582,12 @@ const MultiplicationGame = ({
           {/* Active game */}
           {gameActive && (
             <div className="mg__play">
+              {isSmart && smartLowData && (
+                <p className="mg__ready-info">
+                  Smart Practice note: this table has limited history, so this
+                  round includes more discovery facts.
+                </p>
+              )}
               <QuestionDisplay
                 question={question}
                 hasAnswered={hasAnswered}
