@@ -9,7 +9,7 @@ import AnswerOptions from "../AnswerOptions/AnswerOptions";
 import GameSummary from "../GameSummary/GameSummary";
 import WatermelonAnimation from "../WatermelonAnimation/WatermelonAnimation";
 
-import { generateRound } from "../../utils/questionGenerator";
+import { generateRound, generateDivisionRound } from "../../utils/questionGenerator";
 import { getPointsPerCorrect } from "../../utils/scoring";
 import useSubmitScore from "../../hooks/useSubmitScore";
 import useRecordInsights from "../../hooks/useRecordInsights";
@@ -20,7 +20,9 @@ const INITIAL_LIVES = 5;
 const STREAK_FOR_EXTRA_LIFE = 5;
 const TIME_PER_QUESTION = 8;
 
-const MultiplicationGame = ({ table, onPlayAgain }) => {
+const MultiplicationGame = ({ table, operation = "multiplication", onPlayAgain }) => {
+  const isDivision = operation === "division";
+  const opSymbol = isDivision ? "\u00F7" : "\u00D7";
   const { user } = useAuth();
 
   // sounds
@@ -111,10 +113,10 @@ const MultiplicationGame = ({ table, onPlayAgain }) => {
   const submitScore = async (finalCorrectCount) => {
     setSubmitAttempted(true);
     setSubmitSuccess(false);
-    pendingScoreRef.current = { table, correctCount: finalCorrectCount };
+    pendingScoreRef.current = { table, correctCount: finalCorrectCount, operation };
 
     try {
-      await submit({ table, correctCount: finalCorrectCount });
+      await submit({ table, correctCount: finalCorrectCount, operation });
       setSubmitSuccess(true);
     } catch {
       // error is stored in submitError from the hook
@@ -123,7 +125,8 @@ const MultiplicationGame = ({ table, onPlayAgain }) => {
 
   const handleRetrySubmit = () => {
     if (!pendingScoreRef.current) return;
-    submitScore(pendingScoreRef.current.correctCount);
+    const { correctCount: cc } = pendingScoreRef.current;
+    submitScore(cc);
   };
 
   // ---------- game logic ----------
@@ -171,7 +174,9 @@ const MultiplicationGame = ({ table, onPlayAgain }) => {
   };
 
   const handleStartGame = () => {
-    const freshQuestions = generateRound(table);
+    const freshQuestions = isDivision
+      ? generateDivisionRound(table)
+      : generateRound(table);
 
     setQuestions(freshQuestions);
     setScore(0);
@@ -237,6 +242,7 @@ const MultiplicationGame = ({ table, onPlayAgain }) => {
       isCorrect: false,
       timeTaken,
       outcome: "timeout",
+      operation,
     };
 
     const updatedLog = [...questionLog, questionEntry];
@@ -328,6 +334,7 @@ const MultiplicationGame = ({ table, onPlayAgain }) => {
       isCorrect,
       timeTaken,
       outcome: isCorrect ? "correct" : "wrong",
+      operation,
     };
 
     const updatedLog = [...questionLog, questionEntry];
@@ -376,7 +383,7 @@ const MultiplicationGame = ({ table, onPlayAgain }) => {
           {/* Pre-game: table info + start */}
           {isInitialState && (
             <div className="mg__ready">
-              <div className="mg__ready-table">&times;{table}</div>
+              <div className="mg__ready-table">{opSymbol}{table}</div>
               <p className="mg__ready-pts">
                 {getPointsPerCorrect(table)} pts per correct answer
               </p>

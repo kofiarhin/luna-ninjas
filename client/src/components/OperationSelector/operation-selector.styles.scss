@@ -1,0 +1,122 @@
+/* OperationSelector — mobile-first */
+
+$accent: #d4ff5f;
+$accent-glow: rgba(212, 255, 95, 0.15);
+$surface: #111113;
+$surface-border: rgba(255, 255, 255, 0.06);
+$text: #f0f0f2;
+$text-dim: rgba(255, 255, 255, 0.5);
+$text-muted: rgba(255, 255, 255, 0.3);
+
+.op-selector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: calc(100vh - 58px);
+  padding: 40px 16px 32px;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(212, 255, 95, 0.03) 0%,
+    transparent 50%
+  );
+
+  &__heading {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $text;
+    text-align: center;
+    margin: 0 0 6px;
+  }
+
+  &__sub {
+    font-size: 0.8rem;
+    color: $text-muted;
+    text-align: center;
+    margin: 0 0 32px;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    width: 100%;
+    max-width: 360px;
+  }
+
+  &__btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 32px 16px;
+    border: 1px solid $surface-border;
+    border-radius: 14px;
+    background: $surface;
+    color: $text;
+    cursor: pointer;
+    font-family: inherit;
+    outline: none;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s,
+      box-shadow 0.15s;
+    -webkit-tap-highlight-color: transparent;
+
+    &:hover {
+      background: rgba(212, 255, 95, 0.06);
+      border-color: rgba(212, 255, 95, 0.25);
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(212, 255, 95, 0.1);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &:focus-visible {
+      border-color: $accent;
+      box-shadow: 0 0 0 2px $accent-glow;
+    }
+  }
+
+  &__symbol {
+    font-size: 2.4rem;
+    font-weight: 800;
+    line-height: 1;
+    color: $accent;
+    text-shadow: 0 0 16px rgba(212, 255, 95, 0.3);
+  }
+
+  &__label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: $text-dim;
+    letter-spacing: 0.02em;
+  }
+}
+
+@media (min-width: 768px) {
+  .op-selector {
+    padding: 60px 20px 40px;
+
+    &__heading {
+      font-size: 1.5rem;
+    }
+
+    &__grid {
+      max-width: 420px;
+      gap: 18px;
+    }
+
+    &__btn {
+      padding: 40px 20px;
+    }
+
+    &__symbol {
+      font-size: 3rem;
+    }
+
+    &__label {
+      font-size: 0.9rem;
+    }
+  }
+}

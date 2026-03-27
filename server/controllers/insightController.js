@@ -1,7 +1,9 @@
 const FactMastery = require("../models/factMastery.model");
 
+const VALID_OPS = ["multiplication", "division"];
+
 // POST /api/insights/record
-// Body: { facts: [{ a, b, isCorrect }] }
+// Body: { facts: [{ a, b, isCorrect, operation }] }
 const recordInsights = async (req, res) => {
   const userId = req.auth.userId;
   const { facts } = req.body;
@@ -13,13 +15,21 @@ const recordInsights = async (req, res) => {
   const now = new Date();
 
   const ops = facts.map((f) => {
-    const factA = Math.min(f.a, f.b);
-    const factB = Math.max(f.a, f.b);
+    const operation = VALID_OPS.includes(f.operation)
+      ? f.operation
+      : "multiplication";
     const incField = f.isCorrect ? "correct" : "wrong";
+
+    // Multiplication: commutative normalization (min, max)
+    // Division: store as-is — a = divisor (table), b = quotient
+    const factA =
+      operation === "multiplication" ? Math.min(f.a, f.b) : f.a;
+    const factB =
+      operation === "multiplication" ? Math.max(f.a, f.b) : f.b;
 
     return {
       updateOne: {
-        filter: { userId, factA, factB },
+        filter: { userId, factA, factB, operation },
         update: {
           $inc: { [incField]: 1 },
           $set: { lastSeen: now },
@@ -44,8 +54,8 @@ const getInsights = async (req, res) => {
 
   try {
     const facts = await FactMastery.find({ userId })
-      .select("factA factB correct wrong lastSeen -_id")
-      .sort({ factA: 1, factB: 1 })
+      .select("factA factB operation correct wrong lastSeen -_id")
+      .sort({ operation: 1, factA: 1, factB: 1 })
       .lean();
 
     return res.json({ facts });

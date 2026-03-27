@@ -11,7 +11,7 @@ const { WEIGHT_MAP } = require("../constants/scoring");
 const submitScore = async (req, res, next) => {
   try {
     const userId = req.auth.userId; // set by authMiddleware — never from body
-    const { table, correctCount } = req.body;
+    const { table, correctCount, operation } = req.body;
 
     // --- Validation ---
     const tableInt = parseInt(table, 10);
@@ -30,6 +30,14 @@ const submitScore = async (req, res, next) => {
       return res
         .status(400)
         .json({ message: "correctCount must be an integer between 0 and 12" });
+    }
+
+    const validOps = ["multiplication", "division"];
+    const op = operation || "multiplication";
+    if (!validOps.includes(op)) {
+      return res
+        .status(400)
+        .json({ message: "operation must be 'multiplication' or 'division'" });
     }
 
     // --- Recompute score server-side (never trust client-supplied roundScore) ---

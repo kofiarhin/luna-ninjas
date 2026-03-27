@@ -11,6 +11,7 @@ const useRecordInsights = () => {
       a: q.a,
       b: q.b,
       isCorrect: q.isCorrect,
+      operation: q.operation || "multiplication",
     }));
 
     fetch(`${BASE_URL}/api/insights/record`, {

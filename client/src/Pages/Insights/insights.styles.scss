@@ -39,6 +39,39 @@ $text-muted: rgba(255, 255, 255, 0.35);
     margin: 0 0 14px;
   }
 
+  &__toggle {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    padding: 3px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid $surface-border;
+    border-radius: 10px;
+    width: fit-content;
+  }
+
+  &__toggle-btn {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: $text-dim;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover {
+      color: $text;
+    }
+
+    &--active {
+      background: rgba(212, 255, 95, 0.1);
+      color: $accent;
+    }
+  }
+
   &__section {
     margin-bottom: 32px;
   }

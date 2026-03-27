@@ -16,7 +16,7 @@ const useSubmitScore = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const submit = async ({ table, correctCount }) => {
+  const submit = async ({ table, correctCount, operation }) => {
     setLoading(true);
     setError(null);
 
@@ -27,7 +27,7 @@ const useSubmitScore = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ table, correctCount }),
+        body: JSON.stringify({ table, correctCount, operation }),
       });
 
       const data = await res.json();

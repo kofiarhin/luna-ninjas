@@ -1,5 +1,5 @@
 // client/src/utils/questionGenerator.js
-// Generates a fresh round of 12 multiplication questions for a given table.
+// Generates a fresh round of 12 questions for a given table and operation.
 
 /**
  * Fisher-Yates in-place shuffle.
@@ -15,13 +15,7 @@ const fisherYates = (arr) => {
 };
 
 /**
- * Generate 3 wrong answer candidates for a question.
- * Strategy:
- *   1. Build candidates from correctAnswer ±1, ±2, ±table, table*(b±1)
- *   2. Filter: remove correctAnswer, negatives, zero, duplicates
- *   3. If < 3 remain, fill with random ints in [table, table*12] excluding correctAnswer
- *   4. Take first 3
- *
+ * Generate 3 wrong answer candidates for a multiplication question.
  * @param {number} table
  * @param {number} b - multiplier
  * @param {number} correctAnswer
@@ -39,7 +33,6 @@ const generateWrongAnswers = (table, b, correctAnswer) => {
     table * (b + 1),
   ];
 
-  // Filter: no correctAnswer, no negatives, no zero, deduplicate
   const seen = new Set([correctAnswer]);
   const candidates = rawCandidates.filter((n) => {
     if (n <= 0) return false;
@@ -48,7 +41,6 @@ const generateWrongAnswers = (table, b, correctAnswer) => {
     return true;
   });
 
-  // Fill up to 3 with random integers in [table, table*12] if needed
   const minVal = table;
   const maxVal = table * 12;
 
@@ -67,18 +59,53 @@ const generateWrongAnswers = (table, b, correctAnswer) => {
 };
 
 /**
- * Generates a full round of 12 questions for the given times table.
- * Each question has:
- *   { a, b, correctAnswer, options, questionText }
+ * Generate 3 wrong answer candidates for a division question.
+ * Quotients are small positive integers (1–12), so offsets are ±1, ±2, ±3.
+ * @param {number} correctAnswer - the quotient (1–12)
+ * @returns {number[]} exactly 3 wrong answers
+ */
+const generateDivisionWrongAnswers = (correctAnswer) => {
+  const rawCandidates = [
+    correctAnswer - 1,
+    correctAnswer + 1,
+    correctAnswer - 2,
+    correctAnswer + 2,
+    correctAnswer - 3,
+    correctAnswer + 3,
+  ];
+
+  const seen = new Set([correctAnswer]);
+  const candidates = rawCandidates.filter((n) => {
+    if (n <= 0) return false;
+    if (seen.has(n)) return false;
+    seen.add(n);
+    return true;
+  });
+
+  // Fill with random positive integers in [1, 12] if needed
+  let attempts = 0;
+  while (candidates.length < 3 && attempts < 200) {
+    attempts++;
+    const rand = Math.floor(Math.random() * 12) + 1;
+    if (!seen.has(rand)) {
+      seen.add(rand);
+      candidates.push(rand);
+    }
+  }
+
+  return candidates.slice(0, 3);
+};
+
+/**
+ * Generates a full round of 12 multiplication questions for the given table.
+ * Each question: { a, b, correctAnswer, options, questionText }
  *
- * Multipliers are 1–12, no repeats, Fisher-Yates shuffled.
- * Options are [correctAnswer, ...3 wrong answers], Fisher-Yates shuffled.
+ * a = table, b = multiplier (1–12), correctAnswer = a * b
  *
  * @param {number} table - Integer 2–12
  * @returns {Array<Object>} array of 12 question objects
  */
 export const generateRound = (table) => {
-  // Build multipliers 1–12, shuffled
   const multipliers = fisherYates([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
 
   return multipliers.map((b) => {
@@ -92,6 +119,36 @@ export const generateRound = (table) => {
       correctAnswer,
       options,
       questionText: `What is ${table} × ${b}?`,
+    };
+  });
+};
+
+/**
+ * Generates a full round of 12 division questions for the given table.
+ * Each question: { a, b, correctAnswer, options, questionText }
+ *
+ * a = table (divisor), b = quotient (multiplier index 1–12)
+ * Display: "What is {dividend} ÷ {table}?" where dividend = table * b
+ * correctAnswer = b (the quotient)
+ *
+ * @param {number} table - Integer 2–12 (the divisor)
+ * @returns {Array<Object>} array of 12 question objects
+ */
+export const generateDivisionRound = (table) => {
+  const quotients = fisherYates([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+
+  return quotients.map((b) => {
+    const dividend = table * b;
+    const correctAnswer = b;
+    const wrongAnswers = generateDivisionWrongAnswers(correctAnswer);
+    const options = fisherYates([correctAnswer, ...wrongAnswers]);
+
+    return {
+      a: table,
+      b,
+      correctAnswer,
+      options,
+      questionText: `What is ${dividend} ÷ ${table}?`,
     };
   });
 };
