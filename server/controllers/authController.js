@@ -22,7 +22,7 @@ const safeUser = (user) => ({
  */
 const registerUser = async (req, res, next) => {
   try {
-    let { fullName, email, password, username } = req.body;
+    let { fullName, email, password } = req.body;
 
     // Validate required fields
     const errors = {};
@@ -40,30 +40,9 @@ const registerUser = async (req, res, next) => {
     fullName = fullName.trim();
     email = email.trim().toLowerCase();
 
-    // Normalize username: treat blank as omitted, otherwise lowercase
-    username =
-      username && username.trim() ? username.trim().toLowerCase() : undefined;
-
-    if (username !== undefined) {
-      if (!/^[a-z0-9_]{3,30}$/.test(username)) {
-        return res.status(400).json({
-          errors: {
-            username:
-              "Username must be 3–30 characters: letters, numbers, and underscores only",
-          },
-        });
-      }
-    }
-
     // Uniqueness checks
     const emailExists = await User.findOne({ email });
     if (emailExists) return res.status(409).json({ error: "email_taken" });
-
-    if (username) {
-      const usernameExists = await User.findOne({ username });
-      if (usernameExists)
-        return res.status(409).json({ error: "username_taken" });
-    }
 
     const passwordHash = await bcrypt.hash(password, 10);
     const displayName = fullName;
@@ -72,7 +51,6 @@ const registerUser = async (req, res, next) => {
       fullName,
       email,
       passwordHash,
-      username,
       displayName,
     });
 
@@ -144,8 +122,9 @@ const updateProfile = async (req, res, next) => {
     if (fullName !== undefined && (!fullName || !fullName.trim())) {
       errors.fullName = "Full name is required";
     }
-    if (username !== undefined && username !== "") {
-      if (!/^[a-z0-9_]{3,30}$/.test(username.trim())) {
+    if (username !== undefined) {
+      const normalizedUsername = username.trim().toLowerCase();
+      if (normalizedUsername && !/^[a-z0-9_]{3,30}$/.test(normalizedUsername)) {
         errors.username =
           "Username must be 3–30 characters: letters, numbers, and underscores only";
       }
@@ -158,6 +137,8 @@ const updateProfile = async (req, res, next) => {
     // Prepare update object
     const update = {};
     if (fullName !== undefined) update.fullName = fullName.trim();
+    // displayName is deprecated from active identity flow, but we still accept
+    // updates for backward compatibility.
     if (displayName !== undefined) update.displayName = displayName.trim();
     if (profileImage !== undefined) update.profileImage = profileImage;
     if (username !== undefined) {

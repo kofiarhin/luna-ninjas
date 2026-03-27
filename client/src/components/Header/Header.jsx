@@ -56,7 +56,7 @@ const Header = () => {
                   />
                 )}
                 <NavLink to="/profile" className="header-display-name">
-                  {user.displayName}
+                  {user.username || user.fullName}
                 </NavLink>
                 <button className="header-logout" onClick={handleLogout}>
                   Logout

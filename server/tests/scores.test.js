@@ -66,8 +66,8 @@ jest.mock("../controllers/scoreController", () => ({
   getLeaderboard: jest.fn(async (req, res) => {
     return res.json({
       leaderboard: [
-        { rank: 1, displayName: "Test Ninja", totalScore: 100, gamesPlayed: 5 },
-        { rank: 2, displayName: "Another Ninja", totalScore: 50, gamesPlayed: 3 },
+        { rank: 1, name: "testninja", totalScore: 100, gamesPlayed: 5 },
+        { rank: 2, name: "Another Ninja", totalScore: 50, gamesPlayed: 3 },
       ],
     });
   }),
@@ -77,6 +77,7 @@ jest.mock("../controllers/scoreController", () => ({
 jest.mock("../controllers/authController", () => ({
   registerUser: jest.fn(async (req, res) => res.status(201).json({})),
   loginUser: jest.fn(async (req, res) => res.json({})),
+  updateProfile: jest.fn(async (req, res) => res.json({})),
   getMe: jest.fn(async (req, res) => {
     return res.json({
       _id: req.auth.userId,
@@ -200,12 +201,12 @@ describe("GET /api/leaderboard", () => {
     expect(Array.isArray(res.body.leaderboard)).toBe(true);
   });
 
-  it("each leaderboard entry has rank, displayName, totalScore, gamesPlayed", async () => {
+  it("each leaderboard entry has rank, name, totalScore, gamesPlayed", async () => {
     const res = await request(app).get("/api/leaderboard");
 
     const entry = res.body.leaderboard[0];
     expect(entry).toHaveProperty("rank");
-    expect(entry).toHaveProperty("displayName");
+    expect(entry).toHaveProperty("name");
     expect(entry).toHaveProperty("totalScore");
     expect(entry).toHaveProperty("gamesPlayed");
   });

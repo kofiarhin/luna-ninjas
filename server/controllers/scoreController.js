@@ -75,12 +75,11 @@ const getLeaderboard = async (req, res, next) => {
     const users = await User.find({ totalScore: { $gt: 0 } })
       .sort({ totalScore: -1, createdAt: 1 })
       .limit(20)
-      .select("displayName username fullName totalScore gamesPlayed");
+      .select("username fullName totalScore gamesPlayed");
 
     const leaderboard = users
       .map((user, index) => {
         const name =
-          (user.displayName || "").trim() ||
           (user.username || "").trim() ||
           (user.fullName || "").trim();
         return {

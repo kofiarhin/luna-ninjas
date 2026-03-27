@@ -11,7 +11,6 @@ const Register = () => {
     fullName: "",
     email: "",
     password: "",
-    username: "",
   });
   const [fieldErrors, setFieldErrors] = useState({});
   const [apiError, setApiError] = useState(null);
@@ -48,10 +47,6 @@ const Register = () => {
           setFieldErrors({ email: "This email is already registered" });
           return;
         }
-        if (data.error === "username_taken") {
-          setFieldErrors({ username: "This username is already taken" });
-          return;
-        }
         throw new Error(data.message || "Registration failed");
       }
 
@@ -67,7 +62,7 @@ const Register = () => {
   return (
     <AuthLayout
       title="Create your account"
-      subtitle="Start playing and climb the leaderboard"
+      subtitle="Start playing now — set your username later in Profile"
     >
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         {apiError && (
@@ -133,28 +128,6 @@ const Register = () => {
           />
           {fieldErrors.password && (
             <span className="auth-field__error">{fieldErrors.password}</span>
-          )}
-        </div>
-
-        <div className="auth-field">
-          <label className="auth-field__label" htmlFor="reg-username">
-            Username
-            <span className="auth-field__hint" style={{ marginLeft: 6 }}>
-              (optional)
-            </span>
-          </label>
-          <input
-            className={`auth-field__input${fieldErrors.username ? " has-error" : ""}`}
-            id="reg-username"
-            type="text"
-            name="username"
-            value={form.username}
-            onChange={handleChange}
-            placeholder="ninja42"
-            autoComplete="username"
-          />
-          {fieldErrors.username && (
-            <span className="auth-field__error">{fieldErrors.username}</span>
           )}
         </div>
 

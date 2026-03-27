@@ -12,7 +12,6 @@ const Profile = () => {
   const [form, setForm] = useState({
     fullName: "",
     username: "",
-    displayName: "",
     profileImage: "",
   });
   const [imagePreview, setImagePreview] = useState(null);
@@ -26,7 +25,6 @@ const Profile = () => {
       setForm({
         fullName: user.fullName || "",
         username: user.username || "",
-        displayName: user.displayName || "",
         profileImage: user.profileImage || "",
       });
       setImagePreview(user.profileImage || null);
@@ -89,7 +87,6 @@ const Profile = () => {
     return (
       form.fullName !== (user.fullName || "") ||
       form.username !== (user.username || "") ||
-      form.displayName !== (user.displayName || "") ||
       form.profileImage !== (user.profileImage || "")
     );
   };
@@ -215,22 +212,6 @@ const Profile = () => {
           {fieldErrors.username && (
             <span className="profile-field__error">{fieldErrors.username}</span>
           )}
-        </div>
-
-        <div className="profile-field">
-          <label className="profile-field__label" htmlFor="profile-displayName">
-            Display name
-          </label>
-          <input
-            className={`profile-field__input`}
-            id="profile-displayName"
-            type="text"
-            name="displayName"
-            value={form.displayName}
-            onChange={handleChange}
-            placeholder="Jane"
-            autoComplete="nickname"
-          />
         </div>
 
         <button

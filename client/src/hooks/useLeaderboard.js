@@ -6,7 +6,7 @@ import { BASE_URL } from "../constants/constans";
 
 /**
  * @returns {{ leaders, loading, error, refetch }}
- *   leaders: Array<{ rank, displayName, totalScore, gamesPlayed }>
+ *   leaders: Array<{ rank, name, totalScore, gamesPlayed }>
  *   loading: boolean
  *   error: string | null
  *   refetch: () => void
