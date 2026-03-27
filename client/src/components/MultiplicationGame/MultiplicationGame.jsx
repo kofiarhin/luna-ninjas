@@ -9,10 +9,15 @@ import AnswerOptions from "../AnswerOptions/AnswerOptions";
 import GameSummary from "../GameSummary/GameSummary";
 import WatermelonAnimation from "../WatermelonAnimation/WatermelonAnimation";
 
-import { generateRound, generateDivisionRound } from "../../utils/questionGenerator";
+import {
+  generateRound,
+  generateDivisionRound,
+  buildQuestionsFromFacts,
+} from "../../utils/questionGenerator";
 import { getPointsPerCorrect } from "../../utils/scoring";
 import useSubmitScore from "../../hooks/useSubmitScore";
 import useRecordInsights from "../../hooks/useRecordInsights";
+import useSmartRound from "../../hooks/useSmartRound";
 import { useAuth } from "../../context/AuthContext";
 
 const QUESTIONS_PER_GAME = 12;
@@ -20,8 +25,99 @@ const INITIAL_LIVES = 5;
 const STREAK_FOR_EXTRA_LIFE = 5;
 const TIME_PER_QUESTION = 8;
 
-const MultiplicationGame = ({ table, operation = "multiplication", onPlayAgain }) => {
+const DEFAULT_SMART_QUOTAS = { weak: 6, learning: 3, unseen: 2, strong: 1 };
+const LOW_DATA_SMART_QUOTAS = { weak: 3, learning: 3, unseen: 4, strong: 2 };
+const FILL_ORDER = ["weak", "learning", "unseen", "strong"];
+
+const shuffle = (arr) => {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+};
+
+const composeSmartFacts = (facts, lowData = false) => {
+  const quotas = lowData ? LOW_DATA_SMART_QUOTAS : DEFAULT_SMART_QUOTAS;
+  const byBucket = {
+    weak: [],
+    learning: [],
+    unseen: [],
+    strong: [],
+  };
+
+  facts.forEach((fact) => {
+    const bucket = byBucket[fact.bucket] ? fact.bucket : "learning";
+    byBucket[bucket].push(fact);
+  });
+
+  const selected = [];
+  const counts = new Map();
+
+  const keyOf = (fact) => `${fact.a}-${fact.b}`;
+  const canUse = (fact, allowRepeat = false) => {
+    const key = keyOf(fact);
+    const count = counts.get(key) || 0;
+    if (count === 0) return true;
+    return allowRepeat && count < 2;
+  };
+  const addFact = (fact) => {
+    const key = keyOf(fact);
+    selected.push(fact);
+    counts.set(key, (counts.get(key) || 0) + 1);
+  };
+
+  // Primary quota pass (unique first)
+  FILL_ORDER.forEach((bucket) => {
+    const needed = quotas[bucket] || 0;
+    let bucketAdded = 0;
+    for (const fact of byBucket[bucket]) {
+      if (selected.length >= QUESTIONS_PER_GAME || needed <= 0) break;
+      if (canUse(fact, false)) {
+        addFact(fact);
+        bucketAdded += 1;
+      }
+      if (bucketAdded >= needed) {
+        break;
+      }
+    }
+  });
+
+  // Fill remaining with unique facts in fallback order
+  if (selected.length < QUESTIONS_PER_GAME) {
+    FILL_ORDER.forEach((bucket) => {
+      if (selected.length >= QUESTIONS_PER_GAME) return;
+      for (const fact of byBucket[bucket]) {
+        if (selected.length >= QUESTIONS_PER_GAME) break;
+        if (canUse(fact, false)) addFact(fact);
+      }
+    });
+  }
+
+  // Last resort: allow repeats, max 2 per fact
+  if (selected.length < QUESTIONS_PER_GAME) {
+    FILL_ORDER.forEach((bucket) => {
+      if (selected.length >= QUESTIONS_PER_GAME) return;
+      for (const fact of byBucket[bucket]) {
+        if (selected.length >= QUESTIONS_PER_GAME) break;
+        if (canUse(fact, true)) addFact(fact);
+      }
+    });
+  }
+
+  return selected.slice(0, QUESTIONS_PER_GAME);
+};
+
+const MultiplicationGame = ({
+  table,
+  operation = "multiplication",
+  mode = "standard",
+  onModeChange,
+  onPlayAgain,
+}) => {
   const isDivision = operation === "division";
+  const isSmart = mode === "smart";
   const opSymbol = isDivision ? "\u00F7" : "\u00D7";
   const { user } = useAuth();
 
@@ -67,8 +163,14 @@ const MultiplicationGame = ({ table, operation = "multiplication", onPlayAgain }
   // Score submission & insights
   const { submit, loading: submitLoading, error: submitError } = useSubmitScore();
   const { record } = useRecordInsights();
+  const {
+    fetchSmartRound,
+    loading: smartRoundLoading,
+    error: smartRoundError,
+  } = useSmartRound();
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [smartLowData, setSmartLowData] = useState(false);
   const pendingScoreRef = useRef(null);
 
   // sounds preload
@@ -173,12 +275,28 @@ const MultiplicationGame = ({ table, operation = "multiplication", onPlayAgain }
     }
   };
 
-  const handleStartGame = () => {
-    const freshQuestions = isDivision
-      ? generateDivisionRound(table)
-      : generateRound(table);
+  const handleStartGame = async () => {
+    if (isSmart && !user) return;
+
+    let freshQuestions = [];
+    let lowData = false;
+
+    if (isSmart) {
+      const plan = await fetchSmartRound({ operation, table });
+      const selectedFacts = composeSmartFacts(plan.facts || [], !!plan.lowData);
+      freshQuestions = buildQuestionsFromFacts(selectedFacts, operation);
+      freshQuestions = shuffle(freshQuestions);
+      lowData = !!plan.lowData;
+    } else {
+      freshQuestions = isDivision
+        ? generateDivisionRound(table)
+        : generateRound(table);
+    }
+
+    if (!freshQuestions.length) return;
 
     setQuestions(freshQuestions);
+    setSmartLowData(lowData);
     setScore(0);
     setLives(INITIAL_LIVES);
     setStreak(0);
@@ -384,15 +502,53 @@ const MultiplicationGame = ({ table, operation = "multiplication", onPlayAgain }
           {isInitialState && (
             <div className="mg__ready">
               <div className="mg__ready-table">{opSymbol}{table}</div>
+              {isSmart && (
+                <p className="mg__ready-pts">Smart Practice mode</p>
+              )}
               <p className="mg__ready-pts">
                 {getPointsPerCorrect(table)} pts per correct answer
               </p>
+              {isSmart && smartLowData && (
+                <p className="mg__ready-info">
+                  Building your Smart profile for this table — this round includes
+                  more discovery facts.
+                </p>
+              )}
               <p className="mg__ready-info">
                 {QUESTIONS_PER_GAME} questions &middot; {TIME_PER_QUESTION}s each &middot; {INITIAL_LIVES} lives
               </p>
-              <button className="mg__btn mg__btn--start" onClick={handleStartGame}>
-                Start Game
-              </button>
+              {isSmart && !user ? (
+                <div className="mg__guest">
+                  <p className="mg__guest-title">Smart Practice requires an account</p>
+                  <div className="mg__guest-actions">
+                    <Link to="/login" className="mg__btn mg__btn--primary">
+                      Sign in
+                    </Link>
+                    <Link to="/register" className="mg__btn mg__btn--ghost">
+                      Create account
+                    </Link>
+                    <button
+                      className="mg__btn mg__btn--start"
+                      onClick={() => onModeChange && onModeChange("standard")}
+                    >
+                      Continue Standard
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <button
+                    className="mg__btn mg__btn--start"
+                    onClick={handleStartGame}
+                    disabled={smartRoundLoading}
+                  >
+                    {smartRoundLoading ? "Preparing Smart Round..." : "Start Game"}
+                  </button>
+                  {isSmart && smartRoundError && (
+                    <p className="mg__submit-status">{smartRoundError}</p>
+                  )}
+                </>
+              )}
             </div>
           )}
 

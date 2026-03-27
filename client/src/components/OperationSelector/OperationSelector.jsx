@@ -5,7 +5,7 @@ const OperationSelector = ({ onSelect }) => {
   return (
     <div className="op-selector">
       <h2 className="op-selector__heading">Choose your operation</h2>
-      <p className="op-selector__sub">Pick a mode to practice</p>
+      <p className="op-selector__sub">Then choose Standard or Smart practice</p>
       <div className="op-selector__grid">
         <button
           className="op-selector__btn"

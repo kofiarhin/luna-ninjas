@@ -69,6 +69,70 @@ const generateRound = (table) => {
   });
 };
 
+const generateDivisionWrongAnswers = (correctAnswer) => {
+  const rawCandidates = [
+    correctAnswer - 1,
+    correctAnswer + 1,
+    correctAnswer - 2,
+    correctAnswer + 2,
+    correctAnswer - 3,
+    correctAnswer + 3,
+  ];
+
+  const seen = new Set([correctAnswer]);
+  const candidates = rawCandidates.filter((n) => {
+    if (n <= 0) return false;
+    if (seen.has(n)) return false;
+    seen.add(n);
+    return true;
+  });
+
+  let attempts = 0;
+  while (candidates.length < 3 && attempts < 200) {
+    attempts++;
+    const rand = Math.floor(Math.random() * 12) + 1;
+    if (!seen.has(rand)) {
+      seen.add(rand);
+      candidates.push(rand);
+    }
+  }
+
+  return candidates.slice(0, 3);
+};
+
+const buildQuestionsFromFacts = (facts, operation = "multiplication") => {
+  const isDivision = operation === "division";
+  return facts.map((fact) => {
+    const a = Number(fact.a);
+    const b = Number(fact.b);
+
+    if (isDivision) {
+      const dividend = a * b;
+      const correctAnswer = b;
+      const wrongAnswers = generateDivisionWrongAnswers(correctAnswer);
+      const options = fisherYates([correctAnswer, ...wrongAnswers]);
+      return {
+        a,
+        b,
+        correctAnswer,
+        options,
+        questionText: `What is ${dividend} ÷ ${a}?`,
+      };
+    }
+
+    const correctAnswer = a * b;
+    const wrongAnswers = generateWrongAnswers(a, b, correctAnswer);
+    const options = fisherYates([correctAnswer, ...wrongAnswers]);
+    return {
+      a,
+      b,
+      correctAnswer,
+      options,
+      questionText: `What is ${a} × ${b}?`,
+    };
+  });
+};
+
 // ---- Tests ----
 
 describe("generateRound", () => {
@@ -175,5 +239,38 @@ describe("generateRound", () => {
       // It is astronomically unlikely that 5 shuffles all match
       expect(allSame).toBe(false);
     });
+  });
+});
+
+describe("buildQuestionsFromFacts", () => {
+  it("builds multiplication questions from explicit facts", () => {
+    const questions = buildQuestionsFromFacts(
+      [
+        { a: 7, b: 3 },
+        { a: 7, b: 8 },
+      ],
+      "multiplication"
+    );
+
+    expect(questions).toHaveLength(2);
+    expect(questions[0].questionText).toMatch(/7 × 3/);
+    expect(questions[1].correctAnswer).toBe(56);
+    questions.forEach((q) => expect(q.options).toContain(q.correctAnswer));
+  });
+
+  it("builds division questions from explicit facts", () => {
+    const questions = buildQuestionsFromFacts(
+      [
+        { a: 6, b: 2 },
+        { a: 6, b: 9 },
+      ],
+      "division"
+    );
+
+    expect(questions).toHaveLength(2);
+    expect(questions[0].questionText).toMatch(/12 ÷ 6/);
+    expect(questions[0].correctAnswer).toBe(2);
+    expect(questions[1].correctAnswer).toBe(9);
+    questions.forEach((q) => expect(q.options).toContain(q.correctAnswer));
   });
 });

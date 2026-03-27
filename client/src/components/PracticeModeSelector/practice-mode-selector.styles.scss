@@ -1,0 +1,63 @@
+.practice-mode-selector {
+  text-align: center;
+  color: #fff;
+
+  &__heading {
+    margin-bottom: 0.5rem;
+    font-size: clamp(1.6rem, 2.8vw, 2.2rem);
+  }
+
+  &__sub {
+    margin-bottom: 1.25rem;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.9rem;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  &__btn {
+    appearance: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    padding: 1rem;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.12s ease, border-color 0.12s ease,
+      background-color 0.12s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.12);
+    }
+  }
+
+  &__btn--smart {
+    border-color: rgba(123, 255, 179, 0.5);
+    background: rgba(123, 255, 179, 0.12);
+
+    &:hover {
+      border-color: rgba(123, 255, 179, 0.9);
+      background: rgba(123, 255, 179, 0.18);
+    }
+  }
+
+  &__title {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+  }
+
+  &__desc {
+    display: block;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.95rem;
+  }
+}

@@ -152,3 +152,53 @@ export const generateDivisionRound = (table) => {
     };
   });
 };
+
+/**
+ * Build question objects from an explicit fact list.
+ * Used by Smart Practice so Standard generators remain unchanged.
+ *
+ * For multiplication facts: { a: table, b: multiplier }
+ * For division facts: { a: table(divisor), b: quotient }
+ *
+ * @param {Array<{a:number,b:number}>} facts
+ * @param {"multiplication"|"division"} operation
+ * @returns {Array<Object>}
+ */
+export const buildQuestionsFromFacts = (
+  facts,
+  operation = "multiplication"
+) => {
+  const isDivision = operation === "division";
+
+  return facts.map((fact) => {
+    const a = Number(fact.a);
+    const b = Number(fact.b);
+
+    if (isDivision) {
+      const dividend = a * b;
+      const correctAnswer = b;
+      const wrongAnswers = generateDivisionWrongAnswers(correctAnswer);
+      const options = fisherYates([correctAnswer, ...wrongAnswers]);
+
+      return {
+        a,
+        b,
+        correctAnswer,
+        options,
+        questionText: `What is ${dividend} ÷ ${a}?`,
+      };
+    }
+
+    const correctAnswer = a * b;
+    const wrongAnswers = generateWrongAnswers(a, b, correctAnswer);
+    const options = fisherYates([correctAnswer, ...wrongAnswers]);
+
+    return {
+      a,
+      b,
+      correctAnswer,
+      options,
+      questionText: `What is ${a} × ${b}?`,
+    };
+  });
+};
