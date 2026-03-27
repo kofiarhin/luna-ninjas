@@ -8,6 +8,7 @@ import Game from "./Pages/Game/Game";
 import Login from "./Pages/Login/Login";
 import Register from "./Pages/Register/Register";
 import Profile from "./Pages/Profile/Profile";
+import Insights from "./Pages/Insights/Insights";
 
 const PrivateRoute = ({ children }) => {
   const { user, isLoaded } = useAuth();
@@ -32,6 +33,15 @@ const App = () => {
           element={
             <PrivateRoute>
               <Profile />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/insights"
+          element={
+            <PrivateRoute>
+              <Insights />
             </PrivateRoute>
           }
         />

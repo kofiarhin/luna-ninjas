@@ -27,16 +27,24 @@ const Header = () => {
           >
             Home
           </NavLink>
+          <NavLink
+            to="/game"
+            className={({ isActive }) =>
+              `header-link ${isActive ? "is-active" : ""}`
+            }
+          >
+            Game
+          </NavLink>
 
           {user && (
             <>
               <NavLink
-                to="/game"
+                to="/insights"
                 className={({ isActive }) =>
                   `header-link ${isActive ? "is-active" : ""}`
                 }
               >
-                Game
+                Insights
               </NavLink>
 
               <div className="header-user">

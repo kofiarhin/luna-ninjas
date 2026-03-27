@@ -3,6 +3,7 @@ const cors = require("cors");
 const questionRoutes = require("./routes/questionRoutres");
 const authRoutes = require("./routes/authRoutes");
 const scoreRoutes = require("./routes/scoreRoutes");
+const insightRoutes = require("./routes/insightRoutes");
 
 const app = express();
 
@@ -19,6 +20,8 @@ app.use("/api/questions", questionRoutes);
 
 // Score routes: POST /api/scores and GET /api/leaderboard
 app.use("/api", scoreRoutes);
+
+app.use("/api/insights", insightRoutes);
 
 // Global error handler — always return JSON, never HTML
 app.use((err, req, res, next) => {

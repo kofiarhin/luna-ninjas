@@ -12,6 +12,7 @@ import WatermelonAnimation from "../WatermelonAnimation/WatermelonAnimation";
 import { generateRound } from "../../utils/questionGenerator";
 import { getPointsPerCorrect } from "../../utils/scoring";
 import useSubmitScore from "../../hooks/useSubmitScore";
+import useRecordInsights from "../../hooks/useRecordInsights";
 import { useAuth } from "../../context/AuthContext";
 
 const QUESTIONS_PER_GAME = 12;
@@ -61,8 +62,9 @@ const MultiplicationGame = ({ table, onPlayAgain }) => {
 
   const [lastGameSummary, setLastGameSummary] = useState(null);
 
-  // Score submission
+  // Score submission & insights
   const { submit, loading: submitLoading, error: submitError } = useSubmitScore();
+  const { record } = useRecordInsights();
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const pendingScoreRef = useRef(null);
@@ -150,6 +152,7 @@ const MultiplicationGame = ({ table, onPlayAgain }) => {
     setLastGameSummary(summary);
     if (user) {
       submitScore(correctCount);
+      record(updatedLog);
     }
   };
 

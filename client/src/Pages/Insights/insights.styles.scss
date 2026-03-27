@@ -1,0 +1,254 @@
+/* Insights — mobile-first */
+
+$accent: #d4ff5f;
+$green: #34d399;
+$yellow: #fbbf24;
+$red: #fb7185;
+$bg: #08080a;
+$surface: #111113;
+$surface-border: rgba(255, 255, 255, 0.06);
+$text: #f0f0f2;
+$text-dim: rgba(255, 255, 255, 0.55);
+$text-muted: rgba(255, 255, 255, 0.35);
+
+.ins {
+  min-height: calc(100vh - 58px);
+  width: 100%;
+  background: $bg;
+  padding: 24px 16px 48px;
+
+  &__shell {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  &__title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: $text;
+    letter-spacing: -0.3px;
+    margin: 0 0 24px;
+  }
+
+  &__heading {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: $text-muted;
+    margin: 0 0 14px;
+  }
+
+  &__section {
+    margin-bottom: 32px;
+  }
+
+  &__loading,
+  &__error,
+  &__empty {
+    text-align: center;
+    padding: 48px 16px;
+    color: $text-dim;
+    font-size: 0.9rem;
+  }
+
+  &__error {
+    color: $red;
+  }
+
+  /* ── Table Summary Cards ── */
+
+  &__cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+  }
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 14px 8px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid $surface-border;
+    transition: border-color 0.15s;
+
+    &--mastered {
+      border-color: rgba($green, 0.3);
+    }
+    &--learning {
+      border-color: rgba($yellow, 0.3);
+    }
+    &--struggling {
+      border-color: rgba($red, 0.3);
+    }
+    &--unseen {
+      border-color: $surface-border;
+    }
+  }
+
+  &__card-table {
+    font-size: 1rem;
+    font-weight: 700;
+    color: $text;
+  }
+
+  &__card-acc {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: $accent;
+  }
+
+  &__card-detail {
+    font-size: 0.7rem;
+    color: $text-muted;
+  }
+
+  /* ── Legend ── */
+
+  &__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  &__legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: $text-dim;
+
+    &::before {
+      content: "";
+      display: block;
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    &--mastered::before {
+      background: $green;
+    }
+    &--learning::before {
+      background: $yellow;
+    }
+    &--struggling::before {
+      background: $red;
+    }
+    &--unseen::before {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+  }
+
+  /* ── Heatmap ── */
+
+  &__heatmap-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+    border: 1px solid $surface-border;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  &__heatmap {
+    width: 100%;
+    min-width: 520px;
+    border-collapse: collapse;
+    font-size: 0.7rem;
+  }
+
+  &__heatmap-corner {
+    width: 40px;
+    padding: 8px;
+    color: $text-muted;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  &__heatmap-colhead,
+  &__heatmap-rowhead {
+    padding: 8px 4px;
+    font-weight: 600;
+    color: $text-dim;
+    text-align: center;
+    font-size: 0.7rem;
+  }
+
+  &__heatmap-rowhead {
+    width: 40px;
+    border-right: 1px solid $surface-border;
+  }
+
+  &__cell {
+    text-align: center;
+    padding: 6px 2px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: $text;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    transition: background 0.15s;
+
+    &--mastered {
+      background: rgba($green, 0.2);
+      color: $green;
+    }
+
+    &--learning {
+      background: rgba($yellow, 0.15);
+      color: $yellow;
+    }
+
+    &--struggling {
+      background: rgba($red, 0.15);
+      color: $red;
+    }
+
+    &--unseen {
+      background: transparent;
+      color: $text-muted;
+    }
+  }
+}
+
+/* ── Responsive ── */
+
+@media (min-width: 480px) {
+  .ins {
+    &__cards {
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    }
+
+    &__heatmap {
+      font-size: 0.75rem;
+    }
+
+    &__cell {
+      font-size: 0.7rem;
+      padding: 8px 4px;
+    }
+  }
+}
+
+@media (min-width: 768px) {
+  .ins {
+    padding: 40px 24px 56px;
+
+    &__title {
+      font-size: 1.6rem;
+    }
+
+    &__cards {
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 12px;
+    }
+
+    &__heatmap {
+      min-width: unset;
+    }
+  }
+}
