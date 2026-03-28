@@ -160,7 +160,10 @@ const MultiplicationGame = ({
   const [currentQuestionStartTime, setCurrentQuestionStartTime] = useState(null);
 
   const [isPaused, setIsPaused] = useState(false);
+  const [isConfirmingQuit, setIsConfirmingQuit] = useState(false);
+  const [isEarlyQuit, setIsEarlyQuit] = useState(false);
   const [lastGameSummary, setLastGameSummary] = useState(null);
+  const proceedCancelledRef = useRef(false);
 
   // Score submission & insights
   const { submit, loading: submitLoading, error: submitError } = useSubmitScore();
@@ -320,6 +323,9 @@ const MultiplicationGame = ({
     setGameActive(true);
     setHasAnswered(false);
     setIsPaused(false);
+    setIsConfirmingQuit(false);
+    setIsEarlyQuit(false);
+    proceedCancelledRef.current = false;
     setLastGameSummary(null);
     setSubmitAttempted(false);
     setSubmitSuccess(false);
@@ -348,8 +354,23 @@ const MultiplicationGame = ({
     proceedAfterQuestion(questionIndex + 1, lives, score, questionLog);
   };
 
+  const handleQuit = () => {
+    setIsConfirmingQuit(true);
+  };
+
+  const handleCancelQuit = () => {
+    setIsConfirmingQuit(false);
+  };
+
+  const handleConfirmQuit = () => {
+    proceedCancelledRef.current = true;
+    setIsConfirmingQuit(false);
+    setIsEarlyQuit(true);
+    finishGame(questionIndex, lives, score, questionLog);
+  };
+
   const handleTimeout = () => {
-    if (!gameActive || hasAnswered || isPaused) return;
+    if (!gameActive || hasAnswered || isPaused || isConfirmingQuit) return;
     setHasAnswered(true);
     setFeedback("timeout");
 
@@ -391,6 +412,7 @@ const MultiplicationGame = ({
     setScore(newScore);
 
     setTimeout(() => {
+      if (proceedCancelledRef.current) return;
       proceedAfterQuestion(newQuestionIndex, newLives, newScore, updatedLog);
     }, 900);
   };
@@ -399,6 +421,7 @@ const MultiplicationGame = ({
     if (!gameActive) return;
     if (hasAnswered) return;
     if (isPaused) return;
+    if (isConfirmingQuit) return;
 
     if (timeLeft <= 0) {
       handleTimeout();
@@ -410,10 +433,10 @@ const MultiplicationGame = ({
     }, 1000);
 
     return () => clearTimeout(timerId);
-  }, [timeLeft, gameActive, hasAnswered, isPaused]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [timeLeft, gameActive, hasAnswered, isPaused, isConfirmingQuit]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAnswer = (value) => {
-    if (!gameActive || hasAnswered || timeLeft <= 0 || isPaused) return;
+    if (!gameActive || hasAnswered || timeLeft <= 0 || isPaused || isConfirmingQuit) return;
 
     const isCorrect = value === question.answer;
     setHasAnswered(true);
@@ -487,6 +510,7 @@ const MultiplicationGame = ({
     const delay = isCorrect ? 700 : 900;
 
     setTimeout(() => {
+      if (proceedCancelledRef.current) return;
       proceedAfterQuestion(newQuestionIndex, newLives, newScore, updatedLog);
     }, delay);
   };
@@ -518,8 +542,10 @@ const MultiplicationGame = ({
             questionIndex={questionIndex}
             totalQuestions={QUESTIONS_PER_GAME}
             isPaused={isPaused}
+            isConfirmingQuit={isConfirmingQuit}
             hasAnswered={hasAnswered}
             onPause={handlePause}
+            onQuit={handleQuit}
           />
 
           {/* Pre-game: table info + start */}
@@ -598,8 +624,34 @@ const MultiplicationGame = ({
             </div>
           )}
 
+          {/* Confirm quit overlay */}
+          {gameActive && isConfirmingQuit && (
+            <div className="mg__confirm-quit">
+              <p className="mg__confirm-quit-title">Quit this game?</p>
+              <p className="mg__confirm-quit-sub">Your progress so far will be saved.</p>
+              <div className="mg__confirm-quit-actions">
+                <button
+                  className="mg__btn mg__btn--start"
+                  onClick={handleConfirmQuit}
+                  aria-label="Confirm quit"
+                  // eslint-disable-next-line jsx-a11y/no-autofocus
+                  autoFocus
+                >
+                  Quit
+                </button>
+                <button
+                  className="mg__btn mg__btn--ghost"
+                  onClick={handleCancelQuit}
+                  aria-label="Cancel quit"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Active game */}
-          {gameActive && !isPaused && (
+          {gameActive && !isPaused && !isConfirmingQuit && (
             <div className="mg__play">
               {isSmart && smartLowData && (
                 <p className="mg__ready-info">
@@ -637,7 +689,7 @@ const MultiplicationGame = ({
           )}
 
           {/* Paused overlay */}
-          {gameActive && isPaused && (
+          {gameActive && isPaused && !isConfirmingQuit && (
             <div className="mg__paused">
               <p className="mg__paused-title">Game Paused</p>
               <button
@@ -647,13 +699,20 @@ const MultiplicationGame = ({
               >
                 Resume
               </button>
+              <button
+                className="mg__btn mg__btn--ghost"
+                onClick={handleQuit}
+                aria-label="Quit game"
+              >
+                Quit
+              </button>
             </div>
           )}
 
           {/* Game over */}
           {gameOver && (
             <div className="mg__over">
-              <GameSummary summary={lastGameSummary} />
+              <GameSummary summary={lastGameSummary} earlyQuit={isEarlyQuit} />
 
               {user ? (
                 <div className="mg__submit">

@@ -1,11 +1,11 @@
 import React from "react";
 
-const GameSummary = ({ summary }) => {
+const GameSummary = ({ summary, earlyQuit = false }) => {
   if (!summary) return null;
 
   return (
     <div className="gs">
-      <h2 className="gs__title">Game Over</h2>
+      <h2 className="gs__title">{earlyQuit ? "Round Ended Early" : "Game Over"}</h2>
 
       <div className="gs__grid">
         <div className="gs__card gs__card--score">

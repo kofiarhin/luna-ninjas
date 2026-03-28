@@ -10,8 +10,10 @@ const GameHeader = ({
   questionIndex,
   totalQuestions,
   isPaused,
+  isConfirmingQuit,
   hasAnswered,
   onPause,
+  onQuit,
 }) => {
   const progress =
     gameActive && totalQuestions > 0
@@ -49,13 +51,22 @@ const GameHeader = ({
                 <span className="gh__timer-lbl">sec</span>
               </div>
             )}
-            {!hasAnswered && !isPaused && (
+            {!hasAnswered && !isPaused && !isConfirmingQuit && (
               <button
                 className="gh__pause-btn"
                 onClick={onPause}
                 aria-label="Pause game"
               >
                 Pause
+              </button>
+            )}
+            {!isConfirmingQuit && (
+              <button
+                className="gh__quit-btn"
+                onClick={onQuit}
+                aria-label="Quit game"
+              >
+                Quit
               </button>
             )}
           </div>

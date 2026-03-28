@@ -187,6 +187,41 @@ $radius: 14px;
   }
 }
 
+/* Quit button (in header) */
+
+.gh__quit-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(251, 113, 133, 0.2);
+  background: rgba(251, 113, 133, 0.05);
+  color: rgba(251, 113, 133, 0.7);
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover {
+    background: rgba(251, 113, 133, 0.1);
+    border-color: rgba(251, 113, 133, 0.4);
+    color: $red;
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: $red;
+    box-shadow: 0 0 0 2px rgba(251, 113, 133, 0.2);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
 /* Progress bar */
 
 .gh__progress {
@@ -285,6 +320,40 @@ $radius: 14px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin: 0;
+}
+
+/* ── Confirm quit overlay ── */
+
+.mg__confirm-quit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 16px;
+  text-align: center;
+}
+
+.mg__confirm-quit-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: $text-dim;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0;
+}
+
+.mg__confirm-quit-sub {
+  font-size: 0.8rem;
+  color: $text-muted;
+  margin: 0;
+}
+
+.mg__confirm-quit-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 12px;
 }
 
 /* Question */
