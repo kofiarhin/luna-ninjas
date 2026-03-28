@@ -238,7 +238,7 @@ const MultiplicationGame = ({
   };
 
   // ---------- game logic ----------
-  const finishGame = (nextQuestionIndex, nextLives, nextScore, updatedLog) => {
+  const finishGame = (nextQuestionIndex, nextLives, nextScore, updatedLog, earlyQuit = false) => {
     setGameActive(false);
     setGameOver(true);
 
@@ -264,6 +264,22 @@ const MultiplicationGame = ({
     if (user) {
       submitScore(correctCount);
       record(updatedLog);
+    } else {
+      try {
+        sessionStorage.setItem(
+          "luna_pending_result",
+          JSON.stringify({
+            sessionId: summary.id,
+            table,
+            operation,
+            correctCount,
+            questionLog: updatedLog,
+            isEarlyQuit: earlyQuit,
+          })
+        );
+      } catch {
+        // sessionStorage unavailable — ignore
+      }
     }
   };
 
@@ -308,6 +324,7 @@ const MultiplicationGame = ({
 
     if (!freshQuestions.length) return;
 
+    sessionStorage.removeItem("luna_pending_result");
     setQuestions(freshQuestions);
     setSmartLowData(lowData);
     setScore(0);
@@ -366,7 +383,7 @@ const MultiplicationGame = ({
     proceedCancelledRef.current = true;
     setIsConfirmingQuit(false);
     setIsEarlyQuit(true);
-    finishGame(questionIndex, lives, score, questionLog);
+    finishGame(questionIndex, lives, score, questionLog, true);
   };
 
   const handleTimeout = () => {
@@ -735,9 +752,9 @@ const MultiplicationGame = ({
                 </div>
               ) : (
                 <div className="mg__guest">
-                  <p className="mg__guest-title">Want to save your scores?</p>
+                  <p className="mg__guest-title">Log in to save this result</p>
                   <p className="mg__guest-text">
-                    Sign in to track your progress and compete on the leaderboard
+                    You scored {lastGameSummary?.score} — sign in to save it to your account and appear on the leaderboard.
                   </p>
                   <div className="mg__guest-actions">
                     <Link to="/login" className="mg__btn mg__btn--primary">
