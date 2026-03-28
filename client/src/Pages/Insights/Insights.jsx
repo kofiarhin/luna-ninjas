@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import useInsights from "../../hooks/useInsights";
 import "./insights.styles.scss";
 
@@ -22,6 +23,7 @@ const getCategoryLabel = (cat) => {
 const Insights = () => {
   const { facts, loading, error } = useInsights();
   const [activeOp, setActiveOp] = useState("multiplication");
+  const navigate = useNavigate();
 
   const isDivision = activeOp === "division";
   const opSymbol = isDivision ? "\u00F7" : "\u00D7";
@@ -146,9 +148,15 @@ const Insights = () => {
                       ? getCategory(s.accuracy)
                       : "unseen";
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={s.table}
                       className={`ins__card ins__card--${cat}`}
+                      onClick={() =>
+                        navigate("/game", {
+                          state: { operation: activeOp, table: s.table },
+                        })
+                      }
                     >
                       <span className="ins__card-table">
                         {opSymbol}{s.table}
@@ -161,7 +169,7 @@ const Insights = () => {
                           ? `${s.totalCorrect}/${s.totalAttempts}`
                           : "No attempts"}
                       </span>
-                    </div>
+                    </button>
                   );
                 })}
               </div>

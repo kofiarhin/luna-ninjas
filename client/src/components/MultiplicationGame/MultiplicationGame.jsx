@@ -113,6 +113,7 @@ const MultiplicationGame = ({
   table,
   operation = "multiplication",
   mode = "standard",
+  isQuickLaunch = false,
   onModeChange,
   onPlayAgain,
 }) => {
@@ -510,6 +511,9 @@ const MultiplicationGame = ({
           {isInitialState && (
             <div className="mg__ready">
               <div className="mg__ready-table">{opSymbol}{table}</div>
+              {isQuickLaunch && (
+                <p className="mg__ready-label">Practising {opSymbol}{table}</p>
+              )}
               {isSmart && (
                 <p className="mg__ready-pts">Smart Practice mode</p>
               )}

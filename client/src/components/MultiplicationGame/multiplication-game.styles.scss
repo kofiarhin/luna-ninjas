@@ -193,6 +193,16 @@ $radius: 14px;
   text-shadow: 0 0 24px $accent-glow;
 }
 
+.mg__ready-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $accent;
+  margin: 0 0 8px;
+  opacity: 0.8;
+}
+
 .mg__ready-pts {
   font-size: 0.9rem;
   color: $text-dim;
