@@ -16,6 +16,7 @@ const Game = () => {
   const [selectedMode, setSelectedMode] = useState(null);
   const [selectedTable, setSelectedTable] = useState(null);
   const [practiceTarget, setPracticeTarget] = useState(null);
+  const [gameKey, setGameKey] = useState(0);
 
   useEffect(() => {
     const state = location.state;
@@ -46,15 +47,7 @@ const Game = () => {
   };
 
   const handlePlayAgain = () => {
-    if (practiceTarget) {
-      setSelectedOperation(practiceTarget.operation);
-      setSelectedMode("smart");
-      setSelectedTable(practiceTarget.table);
-    } else {
-      setSelectedOperation(null);
-      setSelectedMode(null);
-      setSelectedTable(null);
-    }
+    setGameKey((k) => k + 1);
   };
 
   return (
@@ -71,6 +64,7 @@ const Game = () => {
         />
       ) : (
         <MultiplicationGame
+          key={gameKey}
           table={selectedTable}
           operation={selectedOperation}
           mode={selectedMode}
