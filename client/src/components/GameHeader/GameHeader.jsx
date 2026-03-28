@@ -9,6 +9,9 @@ const GameHeader = ({
   streak,
   questionIndex,
   totalQuestions,
+  isPaused,
+  hasAnswered,
+  onPause,
 }) => {
   const progress =
     gameActive && totalQuestions > 0
@@ -17,7 +20,7 @@ const GameHeader = ({
 
   return (
     <div className="gh">
-      {/* Top row: stats left, timer right */}
+      {/* Top row: stats left, controls right */}
       <div className="gh__top">
         <div className="gh__stats">
           {!isInitialState && (
@@ -39,9 +42,22 @@ const GameHeader = ({
         </div>
 
         {gameActive && (
-          <div className={`gh__timer${timeLeft <= 3 ? " gh__timer--low" : ""}`}>
-            <span className="gh__timer-val">{timeLeft}</span>
-            <span className="gh__timer-lbl">sec</span>
+          <div className="gh__controls">
+            {!isPaused && (
+              <div className={`gh__timer${timeLeft <= 3 ? " gh__timer--low" : ""}`}>
+                <span className="gh__timer-val">{timeLeft}</span>
+                <span className="gh__timer-lbl">sec</span>
+              </div>
+            )}
+            {!hasAnswered && !isPaused && (
+              <button
+                className="gh__pause-btn"
+                onClick={onPause}
+                aria-label="Pause game"
+              >
+                Pause
+              </button>
+            )}
           </div>
         )}
       </div>

@@ -105,6 +105,15 @@ $radius: 14px;
   margin-top: 2px;
 }
 
+/* Controls (timer + pause button) */
+
+.gh__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 /* Timer */
 
 .gh__timer {
@@ -140,6 +149,41 @@ $radius: 14px;
 
   .gh__timer-val {
     color: $red;
+  }
+}
+
+/* Pause button (in header) */
+
+.gh__pause-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: $text-dim;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: $text;
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: $accent;
+    box-shadow: 0 0 0 2px $accent-dim;
+  }
+
+  &:active {
+    transform: scale(0.96);
   }
 }
 
@@ -220,6 +264,27 @@ $radius: 14px;
 .mg__play {
   display: flex;
   flex-direction: column;
+}
+
+/* ── Paused overlay ── */
+
+.mg__paused {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 48px 16px;
+  text-align: center;
+}
+
+.mg__paused-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: $text-dim;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0;
 }
 
 /* Question */

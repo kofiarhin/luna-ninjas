@@ -159,6 +159,7 @@ const MultiplicationGame = ({
   const [questionLog, setQuestionLog] = useState([]);
   const [currentQuestionStartTime, setCurrentQuestionStartTime] = useState(null);
 
+  const [isPaused, setIsPaused] = useState(false);
   const [lastGameSummary, setLastGameSummary] = useState(null);
 
   // Score submission & insights
@@ -318,6 +319,7 @@ const MultiplicationGame = ({
     setGameOver(false);
     setGameActive(true);
     setHasAnswered(false);
+    setIsPaused(false);
     setLastGameSummary(null);
     setSubmitAttempted(false);
     setSubmitSuccess(false);
@@ -337,8 +339,17 @@ const MultiplicationGame = ({
     setCurrentQuestionStartTime(Date.now());
   };
 
+  const handlePause = () => {
+    setIsPaused(true);
+  };
+
+  const handleResume = () => {
+    setIsPaused(false);
+    proceedAfterQuestion(questionIndex + 1, lives, score, questionLog);
+  };
+
   const handleTimeout = () => {
-    if (!gameActive || hasAnswered) return;
+    if (!gameActive || hasAnswered || isPaused) return;
     setHasAnswered(true);
     setFeedback("timeout");
 
@@ -387,6 +398,7 @@ const MultiplicationGame = ({
   useEffect(() => {
     if (!gameActive) return;
     if (hasAnswered) return;
+    if (isPaused) return;
 
     if (timeLeft <= 0) {
       handleTimeout();
@@ -398,10 +410,10 @@ const MultiplicationGame = ({
     }, 1000);
 
     return () => clearTimeout(timerId);
-  }, [timeLeft, gameActive, hasAnswered]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [timeLeft, gameActive, hasAnswered, isPaused]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAnswer = (value) => {
-    if (!gameActive || hasAnswered || timeLeft <= 0) return;
+    if (!gameActive || hasAnswered || timeLeft <= 0 || isPaused) return;
 
     const isCorrect = value === question.answer;
     setHasAnswered(true);
@@ -505,6 +517,9 @@ const MultiplicationGame = ({
             streak={streak}
             questionIndex={questionIndex}
             totalQuestions={QUESTIONS_PER_GAME}
+            isPaused={isPaused}
+            hasAnswered={hasAnswered}
+            onPause={handlePause}
           />
 
           {/* Pre-game: table info + start */}
@@ -584,7 +599,7 @@ const MultiplicationGame = ({
           )}
 
           {/* Active game */}
-          {gameActive && (
+          {gameActive && !isPaused && (
             <div className="mg__play">
               {isSmart && smartLowData && (
                 <p className="mg__ready-info">
@@ -618,6 +633,20 @@ const MultiplicationGame = ({
                     : ""}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Paused overlay */}
+          {gameActive && isPaused && (
+            <div className="mg__paused">
+              <p className="mg__paused-title">Game Paused</p>
+              <button
+                className="mg__btn mg__btn--start"
+                onClick={handleResume}
+                aria-label="Resume game"
+              >
+                Resume
+              </button>
             </div>
           )}
 
